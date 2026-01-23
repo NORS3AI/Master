@@ -41,8 +41,8 @@ export default {
         return handleStaticAsset(request, env, ctx);
       }
 
-      // Default: return 404
-      return new Response('Not Found', { status: 404 });
+      // Default: serve homepage
+      return handleHomepage(env);
 
     } catch (error) {
       console.error('Worker error:', error);
@@ -75,6 +75,96 @@ export default {
     ctx.waitUntil(runScheduledTasks(env));
   }
 };
+
+/**
+ * Handle homepage
+ */
+async function handleHomepage(env) {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RS News - Mail & Parcel Service News</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 1.25rem;
+      color: #a0a0a0;
+      margin-bottom: 2rem;
+    }
+    .status {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .status-item:last-child { border-bottom: none; }
+    .badge {
+      background: #00d4ff;
+      color: #1a1a2e;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .badge.coming { background: #7b2cbf; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>RS News</h1>
+    <p class="subtitle">Mail & Parcel Service News Platform</p>
+    <p>Your comprehensive source for shipping industry updates, delivered at the edge.</p>
+    <div class="status">
+      <div class="status-item">
+        <span>Platform Status</span>
+        <span class="badge">Live</span>
+      </div>
+      <div class="status-item">
+        <span>Edge Locations</span>
+        <span class="badge">200+</span>
+      </div>
+      <div class="status-item">
+        <span>Phase 4 Features</span>
+        <span class="badge coming">Coming Soon</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
 
 /**
  * Handle health check
