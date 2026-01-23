@@ -53,6 +53,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/rs-news')
 // Routes
 app.use('/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/articles', require('./routes/articles'));
 app.use('/', require('./routes/pages'));
 
 // 404 handler

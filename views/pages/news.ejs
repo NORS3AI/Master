@@ -6,7 +6,7 @@
   <title>News - RS News</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %>>
   <%-include('../components/navbar') %>
 
   <div class="container">
@@ -16,38 +16,64 @@
     </div>
 
     <div class="news-section">
-      <div class="news-list">
-        <article class="news-item">
-          <h3>UPS Announces New Delivery Options</h3>
-          <p class="date">January 23, 2024</p>
-          <p>UPS has launched new same-day delivery options for select markets. This expansion aims to improve service quality for family-owned parcel stores.</p>
-          <a href="#" class="read-more">Read More</a>
-        </article>
-
-        <article class="news-item">
-          <h3>FedEx Updates Service Standards</h3>
-          <p class="date">January 20, 2024</p>
-          <p>FedEx has updated its service standards and cutoff times. Learn how these changes may impact your operations.</p>
-          <a href="#" class="read-more">Read More</a>
-        </article>
-
-        <article class="news-item">
-          <h3>USPS New Shipping Rates Effective</h3>
-          <p class="date">January 15, 2024</p>
-          <p>USPS has announced new shipping rates effective this quarter. Review the new pricing structure for your store.</p>
-          <a href="#" class="read-more">Read More</a>
-        </article>
-
-        <article class="news-item">
-          <h3>DHL Expands Ground Services</h3>
-          <p class="date">January 10, 2024</p>
-          <p>DHL continues to expand its ground services network to reach more customers across the country.</p>
-          <a href="#" class="read-more">Read More</a>
-        </article>
+      <div class="news-list" id="newsList">
+        <!-- Articles will be loaded here by JavaScript -->
       </div>
     </div>
   </div>
 
   <%-include('../components/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/modal.js"></script>
+  <script>
+    // Load and display articles
+    async function loadAndDisplayArticles() {
+      try {
+        const response = await fetch('/api/articles');
+        if (!response.ok) throw new Error('Failed to load articles');
+        const articles = await response.json();
+
+        const newsList = document.getElementById('newsList');
+        newsList.innerHTML = '';
+
+        if (articles.length === 0) {
+          newsList.innerHTML = '<p style="text-align: center; padding: 2rem;">No articles found.</p>';
+          return;
+        }
+
+        articles.forEach(article => {
+          const date = new Date(article.date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          });
+
+          const articleHTML = `
+            <article class="news-item" onclick="openArticleModal('${article._id}')" style="cursor: pointer;">
+              <h3>${article.title}</h3>
+              <p class="date">${date}</p>
+              <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.85rem;">
+                <span class="modal-meta-badge" style="margin: 0;">${article.category}</span>
+                <span>${article.readTime} min read</span>
+              </div>
+              <p>${article.description}</p>
+              <a class="read-more" onclick="event.stopPropagation();">Read More</a>
+            </article>
+          `;
+          newsList.insertAdjacentHTML('beforeend', articleHTML);
+        });
+      } catch (error) {
+        console.error('Error loading articles:', error);
+        document.getElementById('newsList').innerHTML = '<p style="text-align: center; color: red;">Failed to load articles.</p>';
+      }
+    }
+
+    // Load articles when page is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAndDisplayArticles();
+    });
+  </script>
 </body>
 </html>

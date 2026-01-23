@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema({
       default: ''
     }
   },
+  favoriteArticles: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Article'
+  }],
   resetPasswordToken: {
     type: String,
     default: null
