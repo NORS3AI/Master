@@ -115,4 +115,71 @@ router.post('/:id/share', async (req, res) => {
   }
 });
 
+// Search and filter articles
+router.get('/search', async (req, res) => {
+  try {
+    const { query, category, author, sort } = req.query;
+    let filter = {};
+
+    // Search in title, description, and content
+    if (query) {
+      filter.$or = [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { content: { $regex: query, $options: 'i' } }
+      ];
+    }
+
+    // Filter by category
+    if (category && category !== 'all') {
+      filter.category = category;
+    }
+
+    // Filter by author
+    if (author && author !== 'all') {
+      filter.author = author;
+    }
+
+    let articles = await Article.find(filter);
+
+    // Sort results
+    if (sort === 'oldest') {
+      articles.sort((a, b) => new Date(a.date) - new Date(b.date));
+    } else if (sort === 'popular') {
+      articles.sort((a, b) => b.views - a.views);
+    } else if (sort === 'trending') {
+      articles.sort((a, b) => b.shares - a.shares);
+    } else {
+      articles.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    res.json(articles);
+  } catch (error) {
+    console.error('Error searching articles:', error);
+    res.status(500).json({ message: 'Failed to search articles' });
+  }
+});
+
+// Get article categories
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Article.distinct('category');
+    res.json(categories);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ message: 'Failed to fetch categories' });
+  }
+});
+
+// Get article authors
+router.get('/authors', async (req, res) => {
+  try {
+    const authors = await Article.distinct('author');
+    res.json(authors);
+  } catch (error) {
+    console.error('Error fetching authors:', error);
+    res.status(500).json({ message: 'Failed to fetch authors' });
+  }
+});
+
 module.exports = router;
