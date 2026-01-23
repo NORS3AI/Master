@@ -115,7 +115,7 @@ View analytics in Cloudflare dashboard:
 
 ## 🌐 Step 4: Setup DNS Subdomain
 
-Create subdomain `rsnews.nors3ai.com` pointing to Cloudflare Workers:
+Create subdomain `rsnewsroom.nors3ai.com` pointing to Cloudflare Workers:
 
 ### Option A: Via Cloudflare Dashboard
 
@@ -123,7 +123,7 @@ Create subdomain `rsnews.nors3ai.com` pointing to Cloudflare Workers:
 2. Go to DNS Records
 3. Create CNAME record:
    - Type: CNAME
-   - Name: rsnews
+   - Name: rsnewsroom
    - Content: [your-workers-subdomain].workers.dev
    - Proxy: Cloudflare (orange cloud)
 4. Save
@@ -134,7 +134,7 @@ Already configured in routes:
 
 ```toml
 routes = [
-  { pattern = "rsnews.nors3ai.com", zone_name = "nors3ai.com" }
+  { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
 ```
 
@@ -174,7 +174,7 @@ This will:
 1. Build your worker
 2. Upload to Cloudflare
 3. Deploy to all edge locations
-4. Make live at `rsnews.nors3ai.com`
+4. Make live at `rsnewsroom.nors3ai.com`
 
 ### Deploy to Staging
 
@@ -184,7 +184,7 @@ Deploy to staging environment:
 npx wrangler deploy --env staging
 ```
 
-This deploys to `staging-rsnews.nors3ai.com`.
+This deploys to `staging-rsnewsroom.nors3ai.com`.
 
 ---
 
@@ -226,7 +226,7 @@ jobs:
 
       - name: Post deployment
         run: |
-          echo "✅ Deployed to https://rsnews.nors3ai.com"
+          echo "✅ Deployed to https://rsnewsroom.nors3ai.com"
 ```
 
 ### GitHub Secrets Setup
@@ -349,7 +349,7 @@ npx wrangler d1 execute rsnews-db1 --command "SELECT * FROM articles LIMIT 10"
 
 ## 🔗 Subdomain Details
 
-### Domain: rsnews.nors3ai.com
+### Domain: rsnewsroom.nors3ai.com
 
 - **Type:** CNAME to Cloudflare Workers
 - **SSL:** Automatic (Cloudflare managed)
@@ -358,8 +358,8 @@ npx wrangler d1 execute rsnews-db1 --command "SELECT * FROM articles LIMIT 10"
 
 ### Access Points
 
-- Production: https://rsnews.nors3ai.com
-- Staging: https://staging-rsnews.nors3ai.com
+- Production: https://rsnewsroom.nors3ai.com
+- Staging: https://staging-rsnewsroom.nors3ai.com
 - Development: http://localhost:8787
 
 ---
@@ -427,7 +427,7 @@ env.ANALYTICS.writeDataPoint({
 4. ✅ Test locally: `npx wrangler dev`
 5. ✅ Deploy: `npx wrangler deploy`
 6. ✅ Setup GitHub Actions
-7. ✅ Monitor at https://rsnews.nors3ai.com
+7. ✅ Monitor at https://rsnewsroom.nors3ai.com
 
 ---
 
@@ -437,7 +437,7 @@ env.ANALYTICS.writeDataPoint({
 Account ID: 8c338f96fc4756f94cea4c367a604b34
 D1 Database: rsnews-db1
 Domain: nors3ai.com
-Subdomain: rsnews.nors3ai.com
+Subdomain: rsnewsroom.nors3ai.com
 Workers Environment: production, staging, development
 Analytics Dataset: ANALYTICS
 ```

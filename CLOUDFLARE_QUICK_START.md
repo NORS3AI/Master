@@ -100,11 +100,11 @@ Workflow automatically deploys when you push:
 
 | Environment | URL |
 |---|---|
-| Production | https://rsnews.nors3ai.com |
-| Staging | https://staging-rsnews.nors3ai.com |
+| Production | https://rsnewsroom.nors3ai.com |
+| Staging | https://staging-rsnewsroom.nors3ai.com |
 | Development | http://localhost:8787 |
 
-Check health: `https://rsnews.nors3ai.com/health`
+Check health: `https://rsnewsroom.nors3ai.com/health`
 
 ---
 
@@ -183,8 +183,8 @@ cat wrangler.toml | grep rsnews-db1
 ### SSL Certificate Issues?
 
 Cloudflare automatically generates SSL for:
-- `rsnews.nors3ai.com` (production)
-- `staging-rsnews.nors3ai.com` (staging)
+- `rsnewsroom.nors3ai.com` (production)
+- `staging-rsnewsroom.nors3ai.com` (staging)
 
 Wait ~5 minutes after first deployment.
 
@@ -223,7 +223,7 @@ All files are already created:
 
 **Account ID:** `8c338f96fc4756f94cea4c367a604b34`
 **Domain:** `nors3ai.com`
-**Subdomain:** `rsnews.nors3ai.com`
+**Subdomain:** `rsnewsroom.nors3ai.com`
 **Database:** `rsnews-db1`
 
 ---

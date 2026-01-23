@@ -69,14 +69,14 @@ All commits pushed to: `claude/shipping-news-site-setup-1LuoS`
 Account ID:        8c338f96fc4756f94cea4c367a604b34
 D1 Database:       rsnews-db1
 Domain:            nors3ai.com
-Primary Subdomain: rsnews.nors3ai.com
-Staging Subdomain: staging-rsnews.nors3ai.com
+Primary Subdomain: rsnewsroom.nors3ai.com
+Staging Subdomain: staging-rsnewsroom.nors3ai.com
 ```
 
 ### Deployment Endpoints
 ```
-Production:  https://rsnews.nors3ai.com
-Staging:     https://staging-rsnews.nors3ai.com
+Production:  https://rsnewsroom.nors3ai.com
+Staging:     https://staging-rsnewsroom.nors3ai.com
 Development: http://localhost:8787 (local)
 ```
 
@@ -239,7 +239,7 @@ npm run wrangler:deploy:production
 ## 🎯 Next Session Should
 
 1. **Add GitHub Secrets** (CLOUDFLARE_API_TOKEN & CLOUDFLARE_ACCOUNT_ID)
-2. **Create DNS CNAME** record for rsnews.nors3ai.com
+2. **Create DNS CNAME** record for rsnewsroom.nors3ai.com
 3. **Test locally** with `npm run wrangler:dev`
 4. **Deploy to Cloudflare** with `npm run wrangler:deploy:production`
 5. **Initialize D1 schema** with `npm run db:schema`
@@ -311,7 +311,7 @@ npm run db:list                   # List D1 databases
 
 1. **Check wrangler logs:** `npm run wrangler:tail`
 2. **Check GitHub Actions:** GitHub > Actions > Deploy workflow
-3. **Check DNS:** `nslookup rsnews.nors3ai.com`
+3. **Check DNS:** `nslookup rsnewsroom.nors3ai.com`
 4. **Verify secrets:** Ensure both CLOUDFLARE secrets are set
 5. **Local test first:** `npm run wrangler:dev` before deploying
 
@@ -348,7 +348,7 @@ Everything is configured and ready. Just need:
 3. 2 minutes to create DNS CNAME
 4. Deploy!
 
-Then rsnews.nors3ai.com goes live with:
+Then rsnewsroom.nors3ai.com goes live with:
 - ✅ Global edge computing (200+ locations)
 - ✅ Real-time database (D1)
 - ✅ Event analytics

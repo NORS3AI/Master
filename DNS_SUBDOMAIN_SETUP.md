@@ -1,4 +1,4 @@
-# DNS Subdomain Setup - rsnews.nors3ai.com
+# DNS Subdomain Setup - rsnewsroom.nors3ai.com
 
 Complete guide to configure the DNS subdomain pointing to Cloudflare Workers.
 
@@ -8,9 +8,9 @@ Complete guide to configure the DNS subdomain pointing to Cloudflare Workers.
 
 | Property | Value |
 |---|---|
-| **Full Domain** | rsnews.nors3ai.com |
+| **Full Domain** | rsnewsroom.nors3ai.com |
 | **Parent Domain** | nors3ai.com |
-| **Subdomain** | rsnews |
+| **Subdomain** | rsnewsroom |
 | **Type** | CNAME to Cloudflare Workers |
 | **Target** | Cloudflare Workers Edge Network |
 | **SSL** | Automatic (Cloudflare managed) |
@@ -33,8 +33,8 @@ Complete guide to configure the DNS subdomain pointing to Cloudflare Workers.
 3. **Create CNAME Record**
    - Click "Add record"
    - Type: CNAME
-   - Name: `rsnews`
-   - Content: `rsnews.workers.dev` (or your custom workers domain)
+   - Name: `rsnewsroom`
+   - Content: `rsnewsroom.workers.dev` (or your custom workers domain)
    - TTL: Auto (3600 seconds)
    - Proxy: Cloudflare (orange cloud icon)
    - Click Save
@@ -42,7 +42,7 @@ Complete guide to configure the DNS subdomain pointing to Cloudflare Workers.
 4. **Verify DNS Propagation**
    ```bash
    # Check DNS record
-   dig rsnews.nors3ai.com CNAME
+   dig rsnewsroom.nors3ai.com CNAME
 
    # Should show CNAME pointing to workers.dev
    ```
@@ -64,7 +64,7 @@ Wrangler will:
 Check `wrangler.toml`:
 ```toml
 routes = [
-  { pattern = "rsnews.nors3ai.com", zone_name = "nors3ai.com" }
+  { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
 ```
 
@@ -73,11 +73,11 @@ routes = [
 If using Terraform:
 
 ```hcl
-resource "cloudflare_record" "rsnews" {
+resource "cloudflare_record" "rsnewsroom" {
   zone_id = data.cloudflare_zone.nors3ai.id
-  name    = "rsnews"
+  name    = "rsnewsroom"
   type    = "CNAME"
-  value   = "rsnews.workers.dev"
+  value   = "rsnewsroom.workers.dev"
   ttl     = 3600
   proxied = true
 }
@@ -91,9 +91,9 @@ resource "cloudflare_record" "rsnews" {
 
 ```bash
 # Test DNS record
-nslookup rsnews.nors3ai.com
+nslookup rsnewsroom.nors3ai.com
 # or
-dig rsnews.nors3ai.com
+dig rsnewsroom.nors3ai.com
 
 # Should resolve to Cloudflare nameservers
 ```
@@ -102,11 +102,11 @@ dig rsnews.nors3ai.com
 
 ```bash
 # Test HTTP access
-curl -I https://rsnews.nors3ai.com
+curl -I https://rsnewsroom.nors3ai.com
 # Should return 200/404 (not DNS error)
 
 # Check health endpoint
-curl https://rsnews.nors3ai.com/health
+curl https://rsnewsroom.nors3ai.com/health
 # Should return JSON health status
 ```
 
@@ -114,10 +114,10 @@ curl https://rsnews.nors3ai.com/health
 
 ```bash
 # Check SSL certificate
-openssl s_client -connect rsnews.nors3ai.com:443 -servername rsnews.nors3ai.com
+openssl s_client -connect rsnewsroom.nors3ai.com:443 -servername rsnewsroom.nors3ai.com
 
 # Should show:
-# - Certificate: *.nors3ai.com or rsnews.nors3ai.com
+# - Certificate: *.nors3ai.com or rsnewsroom.nors3ai.com
 # - Issuer: Cloudflare
 # - Validity: Valid
 ```
@@ -154,10 +154,10 @@ The subdomain uses HTTPS automatically:
 
 ```bash
 # Check certificate validity
-echo | openssl s_client -servername rsnews.nors3ai.com -connect rsnews.nors3ai.com:443 2>/dev/null | openssl x509 -noout -dates
+echo | openssl s_client -servername rsnewsroom.nors3ai.com -connect rsnewsroom.nors3ai.com:443 2>/dev/null | openssl x509 -noout -dates
 
 # Check certificate details
-echo | openssl s_client -servername rsnews.nors3ai.com -connect rsnews.nors3ai.com:443 2>/dev/null | openssl x509 -noout -text
+echo | openssl s_client -servername rsnewsroom.nors3ai.com -connect rsnewsroom.nors3ai.com:443 2>/dev/null | openssl x509 -noout -text
 ```
 
 ---
@@ -186,7 +186,7 @@ Control who can access your subdomain:
 ```toml
 # In wrangler.toml - can add in future
 [routes]
-pattern = "rsnews.nors3ai.com"
+pattern = "rsnewsroom.nors3ai.com"
 zone_name = "nors3ai.com"
 # IP allowlist would go here
 ```
@@ -206,7 +206,7 @@ zone_name = "nors3ai.com"
 
 ```bash
 # Real-time query monitoring
-watch -n 1 'dig rsnews.nors3ai.com short'
+watch -n 1 'dig rsnewsroom.nors3ai.com short'
 ```
 
 ---
@@ -236,7 +236,7 @@ watch -n 1 'dig rsnews.nors3ai.com short'
 1. Wait 5-10 minutes after DNS creation
 2. Use curl to verify:
    ```bash
-   curl -v https://rsnews.nors3ai.com
+   curl -v https://rsnewsroom.nors3ai.com
    ```
 3. Check Cloudflare SSL/TLS settings
 
@@ -260,7 +260,7 @@ watch -n 1 'dig rsnews.nors3ai.com short'
 
 **Solution:**
 Ensure no conflicting records:
-- Delete old A records for `rsnews`
+- Delete old A records for `rsnewsroom`
 - Only one CNAME per subdomain allowed
 - Check Cloudflare DNS Records page
 
@@ -271,9 +271,9 @@ Ensure no conflicting records:
 ### Current Configuration
 
 ```
-Name:    rsnews
+Name:    rsnewsroom
 Type:    CNAME
-Content: rsnews.workers.dev
+Content: rsnewsroom.workers.dev
 TTL:     Auto (3600)
 Proxy:   Cloudflare (orange)
 ```
@@ -282,7 +282,7 @@ Proxy:   Cloudflare (orange)
 
 Check at: https://whatsmydns.net/
 
-1. Enter: `rsnews.nors3ai.com`
+1. Enter: `rsnewsroom.nors3ai.com`
 2. Check propagation globally
 3. All should show Cloudflare nameservers
 
@@ -299,7 +299,7 @@ Once DNS is configured:
 
 2. **Test Access:**
    ```bash
-   curl https://rsnews.nors3ai.com/health
+   curl https://rsnewsroom.nors3ai.com/health
    ```
 
 3. **Monitor Logs:**
@@ -316,8 +316,8 @@ Once DNS is configured:
 ## 📞 Subdomain Summary
 
 ```
-Production URL:  https://rsnews.nors3ai.com
-Staging URL:     https://staging-rsnews.nors3ai.com
+Production URL:  https://rsnewsroom.nors3ai.com
+Staging URL:     https://staging-rsnewsroom.nors3ai.com
 Development:     http://localhost:8787
 
 Account ID:      8c338f96fc4756f94cea4c367a604b34
@@ -334,7 +334,7 @@ Environment:     production, staging, development
 1. ✅ Create DNS record (CNAME)
 2. ✅ Wait for propagation
 3. ✅ Deploy worker: `npm run wrangler:deploy:production`
-4. ✅ Test: `curl https://rsnews.nors3ai.com/health`
+4. ✅ Test: `curl https://rsnewsroom.nors3ai.com/health`
 5. ✅ Monitor: Check Cloudflare dashboard
 
 ---

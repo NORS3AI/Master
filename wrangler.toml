@@ -5,7 +5,7 @@ account_id = "8c338f96fc4756f94cea4c367a604b34"
 
 # Routes and deployment settings
 routes = [
-  { pattern = "rsnews.nors3ai.com", zone_name = "nors3ai.com" }
+  { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
 
 # Build configuration
@@ -18,7 +18,7 @@ build = {
 [env.production]
 name = "rsnews-production"
 routes = [
-  { pattern = "rsnews.nors3ai.com", zone_name = "nors3ai.com" }
+  { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
 vars = {
   ENVIRONMENT = "production",
@@ -28,7 +28,7 @@ vars = {
 [env.staging]
 name = "rsnews-staging"
 routes = [
-  { pattern = "staging-rsnews.nors3ai.com", zone_name = "nors3ai.com" }
+  { pattern = "staging-rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
 vars = {
   ENVIRONMENT = "staging",

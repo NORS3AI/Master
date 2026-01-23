@@ -24,7 +24,7 @@ All Cloudflare infrastructure configured and ready for deployment.
 |---|---|
 | `CLOUDFLARE_SETUP.md` | Comprehensive setup guide (300+ lines) |
 | `CLOUDFLARE_QUICK_START.md` | 5-10 minute quick start guide |
-| `DNS_SUBDOMAIN_SETUP.md` | DNS configuration for rsnews.nors3ai.com |
+| `DNS_SUBDOMAIN_SETUP.md` | DNS configuration for rsnewsroom.nors3ai.com |
 | `ANALYTICS_ENGINE_SETUP.md` | Analytics Engine implementation guide |
 
 ### GitHub Integration
@@ -45,7 +45,7 @@ All Cloudflare infrastructure configured and ready for deployment.
 Account ID:      8c338f96fc4756f94cea4c367a604b34
 Account Email:   [Your Cloudflare account email]
 Domain:          nors3ai.com
-Subdomain:       rsnews.nors3ai.com
+Subdomain:       rsnewsroom.nors3ai.com
 ```
 
 ---
@@ -54,8 +54,8 @@ Subdomain:       rsnews.nors3ai.com
 
 | Environment | URL | Status |
 |---|---|---|
-| **Production** | https://rsnews.nors3ai.com | Ready |
-| **Staging** | https://staging-rsnews.nors3ai.com | Ready |
+| **Production** | https://rsnewsroom.nors3ai.com | Ready |
+| **Staging** | https://staging-rsnewsroom.nors3ai.com | Ready |
 | **Development** | http://localhost:8787 | Local |
 
 ---
@@ -107,12 +107,12 @@ Real-time analytics at the edge:
 ```toml
 [env.production]
 name = "rsnews-production"
-routes = [{ pattern = "rsnews.nors3ai.com", zone_name = "nors3ai.com" }]
+routes = [{ pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }]
 vars = { ENVIRONMENT = "production" }
 
 [env.staging]
 name = "rsnews-staging"
-routes = [{ pattern = "staging-rsnews.nors3ai.com", zone_name = "nors3ai.com" }]
+routes = [{ pattern = "staging-rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }]
 vars = { ENVIRONMENT = "staging" }
 
 [env.development]
@@ -317,7 +317,7 @@ npm run wrangler:tail
 - [ ] Add CLOUDFLARE_API_TOKEN to GitHub Secrets
 - [ ] Add CLOUDFLARE_ACCOUNT_ID to GitHub Secrets
 - [ ] Create DNS CNAME record: `rsnews` → Workers
-- [ ] Test health endpoint: `https://rsnews.nors3ai.com/health`
+- [ ] Test health endpoint: `https://rsnewsroom.nors3ai.com/health`
 - [ ] View Cloudflare dashboard
 - [ ] Check real-time logs: `npm run wrangler:tail`
 - [ ] Monitor analytics data collection
@@ -429,7 +429,7 @@ For issues or questions:
 Project Name:       rsnews
 Account ID:         8c338f96fc4756f94cea4c367a604b34
 Primary Domain:     nors3ai.com
-Subdomain:          rsnews.nors3ai.com
+Subdomain:          rsnewsroom.nors3ai.com
 Database:           rsnews-db1 (D1 SQLite)
 Analytics:          ANALYTICS Engine
 Environments:       production, staging, development

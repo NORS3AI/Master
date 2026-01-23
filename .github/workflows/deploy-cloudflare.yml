@@ -78,10 +78,10 @@ jobs:
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "environment=production" >> $GITHUB_OUTPUT
-            echo "url=https://rsnews.nors3ai.com" >> $GITHUB_OUTPUT
+            echo "url=https://rsnewsroom.nors3ai.com" >> $GITHUB_OUTPUT
           else
             echo "environment=staging" >> $GITHUB_OUTPUT
-            echo "url=https://staging-rsnews.nors3ai.com" >> $GITHUB_OUTPUT
+            echo "url=https://staging-rsnewsroom.nors3ai.com" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy to Cloudflare (${{ steps.env.outputs.environment }})
