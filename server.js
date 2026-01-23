@@ -56,6 +56,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/articles', require('./routes/articles'));
 app.use('/api/stores', require('./routes/stores'));
 app.use('/api/comments', require('./routes/comments'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/', require('./routes/pages'));
 
 // 404 handler
