@@ -1117,6 +1117,266 @@ body {
   }
 }
 
+/* Article Page */
+.article-page {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.article-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.article-header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--light-bg);
+  padding-bottom: 1rem;
+}
+
+.article-header h1 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  font-size: 2.2rem;
+}
+
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta-item .badge {
+  background: rgba(0, 123, 255, 0.1);
+  color: var(--primary-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.article-image {
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.article-description {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--light-bg);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+  color: #555;
+}
+
+.article-body {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #444;
+}
+
+.article-body p {
+  margin-bottom: 1.5rem;
+}
+
+.article-body h3 {
+  color: var(--primary-color);
+  margin: 2rem 0 1rem 0;
+  font-size: 1.4rem;
+}
+
+.article-share-section {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--light-bg);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.article-share-section h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.share-buttons-full {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.share-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--primary-color);
+  background: white;
+  color: var(--primary-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.share-link:hover,
+.share-link.copy:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.share-link.twitter:hover {
+  border-color: #1DA1F2;
+  background: #1DA1F2;
+}
+
+.share-link.facebook:hover {
+  border-color: #1877F2;
+  background: #1877F2;
+}
+
+.share-link.linkedin:hover {
+  border-color: #0A66C2;
+  background: #0A66C2;
+}
+
+.share-link.email:hover {
+  border-color: #EA4335;
+  background: #EA4335;
+}
+
+.article-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover,
+.action-btn.favorited {
+  background: var(--primary-color);
+  color: white;
+}
+
+.article-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar-section {
+  background: var(--light-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.sidebar-section h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.sidebar-section ul {
+  list-style: none;
+}
+
+.sidebar-section li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-section a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.sidebar-section a:hover {
+  text-decoration: underline;
+  transform: translateX(5px);
+}
+
+.sidebar-section p {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Responsive Article Page */
+@media (max-width: 1024px) {
+  .article-page {
+    grid-template-columns: 1fr;
+  }
+
+  .article-content {
+    padding: 1.5rem;
+  }
+
+  .article-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .article-meta {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .article-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .article-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .article-share-section {
+    padding: 1.5rem;
+  }
+
+  .share-buttons-full {
+    flex-direction: column;
+  }
+
+  .share-link {
+    width: 100%;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .navbar-menu {
