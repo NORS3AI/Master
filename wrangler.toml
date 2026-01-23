@@ -8,39 +8,30 @@ routes = [
   { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
 
-# Build configuration
-build = {
-  command = "npm run build",
-  cwd = "."
-}
-
 # Environment variables
 [env.production]
 name = "rsnews-production"
 routes = [
   { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
-vars = {
-  ENVIRONMENT = "production",
-  MONGODB_URI = "mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster.mongodb.net/rsnews"
-}
+[env.production.vars]
+ENVIRONMENT = "production"
+MONGODB_URI = "mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster.mongodb.net/rsnews"
 
 [env.staging]
 name = "rsnews-staging"
 routes = [
   { pattern = "staging-rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
 ]
-vars = {
-  ENVIRONMENT = "staging",
-  MONGODB_URI = "mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster.mongodb.net/rsnews-staging"
-}
+[env.staging.vars]
+ENVIRONMENT = "staging"
+MONGODB_URI = "mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster.mongodb.net/rsnews-staging"
 
 [env.development]
 name = "rsnews-dev"
-vars = {
-  ENVIRONMENT = "development",
-  MONGODB_URI = "mongodb://localhost:27017/rsnews"
-}
+[env.development.vars]
+ENVIRONMENT = "development"
+MONGODB_URI = "mongodb://localhost:27017/rsnews"
 
 # D1 Database binding
 [[d1_databases]]
@@ -53,27 +44,24 @@ database_id = "rsnews-db1"
 binding = "ANALYTICS"
 
 # Environment-specific D1 databases
-[env.production.d1_databases]
-[env.production.d1_databases.DB]
+[[env.production.d1_databases]]
+binding = "DB"
 database_name = "rsnews-db1-production"
 database_id = "rsnews-db1-prod"
 
-[env.staging.d1_databases]
-[env.staging.d1_databases.DB]
+[[env.staging.d1_databases]]
+binding = "DB"
 database_name = "rsnews-db1-staging"
 database_id = "rsnews-db1-staging"
 
 # Environment-specific Analytics
-[env.production.analytics_engine_datasets]
-[env.production.analytics_engine_datasets.ANALYTICS]
+[[env.production.analytics_engine_datasets]]
 binding = "ANALYTICS"
 
-[env.staging.analytics_engine_datasets]
-[env.staging.analytics_engine_datasets.ANALYTICS]
+[[env.staging.analytics_engine_datasets]]
 binding = "ANALYTICS_STAGING"
 
-[env.development.analytics_engine_datasets]
-[env.development.analytics_engine_datasets.ANALYTICS]
+[[env.development.analytics_engine_datasets]]
 binding = "ANALYTICS_DEV"
 
 # Triggers for scheduled jobs
