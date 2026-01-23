@@ -1,0 +1,26 @@
+<nav class="navbar">
+  <div class="container navbar-content">
+    <div class="navbar-brand">
+      <a href="/" class="logo">RS News</a>
+      <span class="tagline">Mail & Parcel Service News</span>
+    </div>
+    <ul class="navbar-menu">
+      <li><a href="/">Home</a></li>
+      <li><a href="/news">News</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <% if (isAuthenticated) { %>
+        <li class="user-menu">
+          <span class="username"><%= username %></span>
+          <ul class="dropdown">
+            <li><a href="/my-account">My Account</a></li>
+            <li><a href="/auth/logout">Logout</a></li>
+          </ul>
+        </li>
+      <% } else { %>
+        <li><a href="/auth/login" class="btn-link">Login</a></li>
+        <li><a href="/auth/register" class="btn-link">Register</a></li>
+      <% } %>
+    </ul>
+  </div>
+</nav>

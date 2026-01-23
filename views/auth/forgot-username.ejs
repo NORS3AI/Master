@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgot Username - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <div class="auth-container">
+      <h1>Reset Username</h1>
+      <p>Enter your email and password to reset your username.</p>
+
+      <form id="forgotUsernameForm" class="auth-form">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" required>
+          <span class="error"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+          <span class="error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Send Reset Link</button>
+      </form>
+
+      <div class="auth-links">
+        <p><a href="/auth/login">Back to Login</a></p>
+        <p><a href="/auth/forgot-password">Forgot your password instead?</a></p>
+      </div>
+    </div>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <script>
+    $('#forgotUsernameForm').on('submit', function(e) {
+      e.preventDefault();
+      const email = $('#email').val();
+      const password = $('#password').val();
+
+      $.ajax({
+        url: '/auth/forgot-username',
+        type: 'POST',
+        data: { email, password },
+        success: function(response) {
+          alert('Reset email sent! Check your inbox.');
+          window.location.href = '/auth/login';
+        },
+        error: function(xhr) {
+          const message = xhr.responseJSON?.message || 'Failed to send reset email';
+          alert(message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %>>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Latest News</h1>
+      <p>Stay informed about developments in mail and parcel services</p>
+    </div>
+
+    <div class="news-filters">
+      <div class="filter-group">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search articles..." />
+      </div>
+
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="categoryFilter">Category</label>
+          <select id="categoryFilter" class="filter-select">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="authorFilter">Author</label>
+          <select id="authorFilter" class="filter-select">
+            <option value="all">All Authors</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="sortFilter">Sort</label>
+          <select id="sortFilter" class="filter-select">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="popular">Most Viewed</option>
+            <option value="trending">Most Shared</option>
+          </select>
+        </div>
+
+        <button id="resetFilters" class="btn btn-secondary" style="align-self: flex-end;">Reset</button>
+      </div>
+    </div>
+
+    <div class="news-section">
+      <div class="news-list" id="newsList">
+        <!-- Articles will be loaded here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/modal.js"></script>
+  <script>
+    // Filter state
+    let allArticles = [];
+
+    // Display articles
+    function displayArticles(articles) {
+      const newsList = document.getElementById('newsList');
+      newsList.innerHTML = '';
+
+      if (articles.length === 0) {
+        newsList.innerHTML = '<p style="text-align: center; padding: 2rem;">No articles found.</p>';
+        return;
+      }
+
+      articles.forEach(article => {
+        const date = new Date(article.date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+
+        const articleHTML = `
+          <article class="news-item" onclick="openArticleModal('${article._id}')" style="cursor: pointer;">
+            <h3>${article.title}</h3>
+            <p class="date">${date}</p>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.85rem;">
+              <span class="modal-meta-badge" style="margin: 0;">${article.category}</span>
+              <span>${article.readTime} min read</span>
+            </div>
+            <p>${article.description}</p>
+            <a class="read-more" onclick="event.stopPropagation();">Read More</a>
+          </article>
+        `;
+        newsList.insertAdjacentHTML('beforeend', articleHTML);
+      });
+    }
+
+    // Load and populate filter options
+    async function loadFilters() {
+      try {
+        const [categories, authors] = await Promise.all([
+          fetch('/api/articles/categories').then(r => r.json()),
+          fetch('/api/articles/authors').then(r => r.json())
+        ]);
+
+        const categorySelect = document.getElementById('categoryFilter');
+        const authorSelect = document.getElementById('authorFilter');
+
+        categories.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat;
+          categorySelect.appendChild(option);
+        });
+
+        authors.forEach(author => {
+          const option = document.createElement('option');
+          option.value = author;
+          option.textContent = author;
+          authorSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading filters:', error);
+      }
+    }
+
+    // Load and display articles
+    async function loadAndDisplayArticles() {
+      try {
+        const response = await fetch('/api/articles');
+        if (!response.ok) throw new Error('Failed to load articles');
+        allArticles = await response.json();
+        displayArticles(allArticles);
+        loadFilters();
+      } catch (error) {
+        console.error('Error loading articles:', error);
+        document.getElementById('newsList').innerHTML = '<p style="text-align: center; color: red;">Failed to load articles.</p>';
+      }
+    }
+
+    // Filter articles
+    function filterArticles() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+      const author = document.getElementById('authorFilter').value;
+      const sort = document.getElementById('sortFilter').value;
+
+      let filtered = allArticles.filter(article => {
+        const matchesSearch = !search ||
+          article.title.toLowerCase().includes(search) ||
+          article.description.toLowerCase().includes(search);
+        const matchesCategory = category === 'all' || article.category === category;
+        const matchesAuthor = author === 'all' || article.author === author;
+        return matchesSearch && matchesCategory && matchesAuthor;
+      });
+
+      // Sort
+      filtered.sort((a, b) => {
+        if (sort === 'oldest') {
+          return new Date(a.date) - new Date(b.date);
+        } else if (sort === 'popular') {
+          return b.views - a.views;
+        } else if (sort === 'trending') {
+          return b.shares - a.shares;
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      });
+
+      displayArticles(filtered);
+    }
+
+    // Reset filters
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = 'all';
+      document.getElementById('authorFilter').value = 'all';
+      document.getElementById('sortFilter').value = 'newest';
+      displayArticles(allArticles);
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAndDisplayArticles();
+
+      document.getElementById('searchInput').addEventListener('keyup', filterArticles);
+      document.getElementById('categoryFilter').addEventListener('change', filterArticles);
+      document.getElementById('authorFilter').addEventListener('change', filterArticles);
+      document.getElementById('sortFilter').addEventListener('change', filterArticles);
+      document.getElementById('resetFilters').addEventListener('click', resetFilters);
+    });
+  </script>
+</body>
+</html>

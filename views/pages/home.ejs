@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %>>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <section class="hero">
+      <h1>RS News</h1>
+      <p class="subtitle">Your Source for Mail & Parcel Service News</p>
+      <p class="description">Stay updated on the latest news from UPS, FedEx, USPS, DHL, and more. Designed for family-owned and operated mail and parcel stores.</p>
+      <% if (!isAuthenticated) { %>
+        <div class="hero-buttons">
+          <a href="/auth/login" class="btn btn-primary">Login</a>
+          <a href="/auth/register" class="btn btn-secondary">Register</a>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="featured-news">
+      <h2>Featured News</h2>
+      <div class="news-grid" id="featuredNews">
+        <!-- Featured articles will be loaded here -->
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>Join Our Community</h2>
+      <p>Connect with other mail and parcel store owners and stay informed about industry news.</p>
+      <% if (!isAuthenticated) { %>
+        <a href="/auth/register" class="btn btn-primary">Get Started</a>
+      <% } else { %>
+        <a href="/my-account" class="btn btn-primary">Go to Your Account</a>
+      <% } %>
+      <p style="margin-top: 1.5rem;"><a href="/news" class="btn btn-secondary">View All News</a></p>
+    </section>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/modal.js"></script>
+  <script>
+    // Load and display featured articles
+    async function loadFeaturedArticles() {
+      try {
+        const response = await fetch('/api/articles');
+        if (!response.ok) throw new Error('Failed to load articles');
+        const articles = await response.json();
+
+        const featured = articles.filter(a => a.featured).slice(0, 3);
+        const container = document.getElementById('featuredNews');
+
+        if (featured.length === 0) {
+          container.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No featured articles available.</p>';
+          return;
+        }
+
+        container.innerHTML = featured.map(article => `
+          <article class="news-card" onclick="openArticleModal('${article._id}')" style="cursor: pointer; transition: all 0.3s ease;">
+            <h3>${article.title}</h3>
+            <p>${article.description}</p>
+            <a class="read-more" onclick="event.stopPropagation();">Read More</a>
+          </article>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading featured articles:', error);
+        document.getElementById('featuredNews').innerHTML = '<p style="grid-column: 1/-1; color: red;">Failed to load articles.</p>';
+      }
+    }
+
+    // Load featured articles when page is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFeaturedArticles();
+    });
+  </script>
+</body>
+</html>

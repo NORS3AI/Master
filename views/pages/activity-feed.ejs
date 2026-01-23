@@ -1,0 +1,324 @@
+<%- include('../layout') %>
+
+<div class="activity-feed-page">
+  <div class="container">
+    <div class="activity-feed-header">
+      <h1>Activity Feed</h1>
+      <p>Follow the latest activities from your community</p>
+    </div>
+
+    <div class="activity-feed-content">
+      <div class="activity-feed-main">
+        <% if (user) { %>
+          <div class="activity-feed-info">
+            <p>Showing activities from users you follow</p>
+          </div>
+        <% } else { %>
+          <div class="activity-feed-info">
+            <p><a href="/login">Log in</a> to see personalized activities from users you follow</p>
+          </div>
+        <% } %>
+
+        <div id="activity-feed-container" class="activity-list">
+          <div class="loading">Loading activities...</div>
+        </div>
+
+        <div id="activity-pagination" class="pagination"></div>
+      </div>
+
+      <div class="activity-feed-sidebar">
+        <div class="activity-stats-card">
+          <h3>Activity Trends</h3>
+          <p>Real-time updates from your network</p>
+
+          <div class="activity-filters">
+            <button class="filter-button active" data-filter="all">All Activities</button>
+            <button class="filter-button" data-filter="follow">Follows</button>
+            <button class="filter-button" data-filter="comment">Comments</button>
+            <button class="filter-button" data-filter="favorite">Favorites</button>
+            <button class="filter-button" data-filter="article">Articles</button>
+            <button class="filter-button" data-filter="badge">Badges</button>
+          </div>
+        </div>
+
+        <div class="activity-leaderboard-card">
+          <h3>Most Active This Month</h3>
+          <div id="leaderboard-container" class="leaderboard-list">
+            <p class="text-sm text-gray-500">Loading leaderboard...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .activity-feed-page {
+    padding: 2rem 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .activity-feed-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .activity-feed-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .activity-feed-header p {
+    font-size: 1.1rem;
+    color: #666;
+  }
+
+  .activity-feed-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .activity-feed-main {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .activity-feed-info {
+    padding: 1rem;
+    background: #f0f4f8;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .activity-list {
+    margin: 1.5rem 0;
+  }
+
+  .activity-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+  }
+
+  .activity-item:hover {
+    background: #f9f9f9;
+  }
+
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+
+  .activity-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .activity-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  .activity-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .activity-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .activity-text strong {
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .activity-time {
+    font-size: 0.85rem;
+    color: #999;
+  }
+
+  .activity-icon {
+    font-size: 1.5rem;
+    margin-left: 1rem;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .page-button {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .page-button:hover {
+    background: #f0f0f0;
+  }
+
+  .page-button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+
+  .activity-feed-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .activity-stats-card,
+  .activity-leaderboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .activity-stats-card h3,
+  .activity-leaderboard-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .activity-stats-card p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  .activity-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .filter-button {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: left;
+    transition: all 0.2s;
+  }
+
+  .filter-button:hover {
+    background: #f5f5f5;
+  }
+
+  .filter-button.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+
+  .leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .leaderboard-item {
+    padding: 0.75rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .leaderboard-rank {
+    font-weight: bold;
+    color: #007bff;
+    min-width: 30px;
+  }
+
+  .leaderboard-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .leaderboard-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .leaderboard-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .leaderboard-count {
+    font-size: 0.8rem;
+    color: #999;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+  }
+
+  @media (max-width: 768px) {
+    .activity-feed-content {
+      grid-template-columns: 1fr;
+    }
+
+    .activity-feed-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .activity-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .activity-content {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .activity-icon {
+      margin-left: 0;
+      margin-top: 1rem;
+    }
+  }
+</style>
+
+<script src="/js/activity.js"></script>

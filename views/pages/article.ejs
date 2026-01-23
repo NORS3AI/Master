@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= article.title %> - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- OG Meta Tags for Social Sharing -->
+  <meta property="og:title" content="<%= ogData.title %>">
+  <meta property="og:description" content="<%= ogData.description %>">
+  <meta property="og:image" content="<%= ogData.image %>">
+  <meta property="og:url" content="<%= ogData.url %>">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="RS News">
+
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= ogData.title %>">
+  <meta name="twitter:description" content="<%= ogData.description %>">
+  <meta name="twitter:image" content="<%= ogData.image %>">
+
+  <!-- Article Meta Tags -->
+  <meta property="article:author" content="<%= ogData.author %>">
+  <meta property="article:published_time" content="<%= ogData.publishedDate.toISOString() %>">
+  <meta property="article:section" content="<%= ogData.category %>">
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="<%= ogData.description %>">
+  <meta name="keywords" content="<%= ogData.category %>, shipping, parcel, mail, news">
+  <meta name="author" content="<%= ogData.author %>">
+</head>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %> data-article-id="<%= article._id %>">
+  <%-include('../components/navbar') %>
+
+  <div class="container article-page">
+    <article class="article-content">
+      <div class="article-header">
+        <h1><%= article.title %></h1>
+        <div class="article-meta">
+          <span class="meta-item">
+            <strong>Published:</strong> <%= new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+          </span>
+          <span class="meta-item">
+            <strong>Category:</strong> <span class="badge"><%= article.category %></span>
+          </span>
+          <span class="meta-item">
+            <strong>Read Time:</strong> <%= article.readTime %> min
+          </span>
+          <span class="meta-item">
+            <strong>By:</strong> <%= article.author %>
+          </span>
+          <span class="meta-item">
+            <strong>Views:</strong> <%= article.views %>
+          </span>
+        </div>
+      </div>
+
+      <% if (article.image) { %>
+        <img src="<%= article.image %>" alt="<%= article.title %>" class="article-image">
+      <% } %>
+
+      <div class="article-description">
+        <p><%= article.description %></p>
+      </div>
+
+      <div class="article-body">
+        <% article.content.split('\n\n').forEach(paragraph => { %>
+          <p><%= paragraph %></p>
+        <% }) %>
+      </div>
+
+      <div class="article-share-section">
+        <h3>Share This Article</h3>
+        <div class="share-buttons-full">
+          <a href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(article.title) %>&url=<%= encodeURIComponent(ogData.url) %>&hashtags=shipping,parcel,mail"
+             target="_blank" class="share-link twitter">
+            <span>Share on Twitter</span>
+          </a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(ogData.url) %>"
+             target="_blank" class="share-link facebook">
+            <span>Share on Facebook</span>
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=<%= encodeURIComponent(ogData.url) %>"
+             target="_blank" class="share-link linkedin">
+            <span>Share on LinkedIn</span>
+          </a>
+          <a href="mailto:?subject=<%= encodeURIComponent(article.title) %>&body=<%= encodeURIComponent(article.description + ' ' + ogData.url) %>"
+             class="share-link email">
+            <span>Share via Email</span>
+          </a>
+          <button class="share-link copy" id="copyLinkBtn" onclick="copyArticleLink()">
+            <span>Copy Link</span>
+          </button>
+        </div>
+      </div>
+
+      <% if (isAuthenticated) { %>
+        <div class="article-actions">
+          <button id="favoriteBtnFull" class="action-btn favorite">☆ Add to Favorites</button>
+        </div>
+      <% } %>
+
+      <!-- Comments Section -->
+      <section class="comments-section">
+        <h3>Comments <span class="comments-count" id="commentsCount">(0)</span></h3>
+
+        <% if (isAuthenticated) { %>
+          <form id="commentForm" class="comment-form">
+            <div class="comment-form-group">
+              <label for="commentContent">Leave a Comment</label>
+              <textarea id="commentContent" placeholder="Share your thoughts..." required></textarea>
+              <small style="color: #999; display: block; margin-top: 0.25rem;">Max 1000 characters</small>
+            </div>
+            <div class="comment-form-submit">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('commentForm').reset()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Post Comment</button>
+            </div>
+          </form>
+        <% } else { %>
+          <div class="login-to-comment">
+            <p>Please <a href="/auth/login">login</a> or <a href="/auth/register">register</a> to leave a comment.</p>
+          </div>
+        <% } %>
+
+        <div id="commentsList" class="comments-list" style="margin-top: 1.5rem;">
+          <!-- Comments will be loaded here -->
+        </div>
+      </section>
+    </article>
+
+    <aside class="article-sidebar">
+      <div class="sidebar-section">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/news">All News</a></li>
+          <li><a href="/about">About RS News</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Article Info</h3>
+        <p><strong>Category:</strong> <%= article.category %></p>
+        <p><strong>Read Time:</strong> <%= article.readTime %> minutes</p>
+        <p><strong>Views:</strong> <%= article.views %></p>
+      </div>
+    </aside>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/comments.js"></script>
+  <script>
+    const articleId = '<%= article._id %>';
+
+    function copyArticleLink() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        showNotification('Article link copied to clipboard!', 'success');
+      }).catch(() => {
+        showNotification('Failed to copy link', 'error');
+      });
+    }
+
+    <% if (isAuthenticated) { %>
+    // Check if article is favorited
+    async function checkFavoritedStatus() {
+      try {
+        const response = await fetch(`/api/articles/${articleId}/is-favorited`);
+        if (!response.ok) return;
+        const data = await response.json();
+
+        const btn = document.getElementById('favoriteBtnFull');
+        if (data.isFavorited) {
+          btn.classList.add('favorited');
+          btn.textContent = '★ Remove from Favorites';
+        } else {
+          btn.classList.remove('favorited');
+          btn.textContent = '☆ Add to Favorites';
+        }
+      } catch (error) {
+        console.error('Error checking favorite status:', error);
+      }
+    }
+
+    // Toggle favorite
+    document.getElementById('favoriteBtnFull').addEventListener('click', async function() {
+      try {
+        const response = await fetch(`/api/articles/${articleId}/favorite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Failed to update favorite');
+        const data = await response.json();
+
+        checkFavoritedStatus();
+        showNotification(data.message, 'success');
+      } catch (error) {
+        console.error('Error toggling favorite:', error);
+        showNotification('Failed to update favorite', 'error');
+      }
+    });
+
+    // Check favorite status on page load
+    document.addEventListener('DOMContentLoaded', checkFavoritedStatus);
+    <% } %>
+  </script>
+</body>
+</html>
