@@ -130,4 +130,37 @@ router.get('/stores/:id', async (req, res) => {
   }
 });
 
+// Admin dashboard page
+router.get('/admin/dashboard', isAuthenticatedView, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+
+    // Check if user is admin (basic check - can be expanded with permission system in Phase 3.3)
+    if (!user || !user.isAdmin) {
+      return res.status(403).render('error', { message: 'Unauthorized access' });
+    }
+
+    res.render('pages/admin/dashboard', { user });
+  } catch (error) {
+    console.error('Error loading admin dashboard:', error);
+    res.status(500).render('error', { message: 'Server error' });
+  }
+});
+
+// Activity feed page
+router.get('/activity-feed', async (req, res) => {
+  res.render('pages/activity-feed', {
+    user: req.session.userId,
+    isAuthenticated: !!req.session.userId
+  });
+});
+
+// Badges page
+router.get('/badges', async (req, res) => {
+  res.render('pages/badges', {
+    user: req.session.userId,
+    isAuthenticated: !!req.session.userId
+  });
+});
+
 module.exports = router;

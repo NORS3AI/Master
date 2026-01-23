@@ -37,6 +37,10 @@ app.use(session({
   }
 }));
 
+// Analytics middleware
+const { analyticsMiddleware } = require('./middleware/analyticsMiddleware');
+app.use(analyticsMiddleware());
+
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -62,6 +66,7 @@ app.use('/api/activity', require('./routes/activity'));
 app.use('/api/badges', require('./routes/badges'));
 app.use('/api/spotlight', require('./routes/spotlight'));
 app.use('/api/employee-spotlight', require('./routes/employee-spotlight'));
+app.use('/api/analytics', require('./routes/analytics'));
 app.use('/', require('./routes/pages'));
 
 // 404 handler
