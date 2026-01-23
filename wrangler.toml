@@ -33,3 +33,4 @@ ENVIRONMENT = "development"
 # Observability settings
 [observability]
 enabled = true
+
