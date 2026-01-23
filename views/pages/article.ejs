@@ -30,7 +30,7 @@
   <meta name="keywords" content="<%= ogData.category %>, shipping, parcel, mail, news">
   <meta name="author" content="<%= ogData.author %>">
 </head>
-<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %>>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %> data-article-id="<%= article._id %>">
   <%-include('../components/navbar') %>
 
   <div class="container article-page">
@@ -100,6 +100,33 @@
           <button id="favoriteBtnFull" class="action-btn favorite">☆ Add to Favorites</button>
         </div>
       <% } %>
+
+      <!-- Comments Section -->
+      <section class="comments-section">
+        <h3>Comments <span class="comments-count" id="commentsCount">(0)</span></h3>
+
+        <% if (isAuthenticated) { %>
+          <form id="commentForm" class="comment-form">
+            <div class="comment-form-group">
+              <label for="commentContent">Leave a Comment</label>
+              <textarea id="commentContent" placeholder="Share your thoughts..." required></textarea>
+              <small style="color: #999; display: block; margin-top: 0.25rem;">Max 1000 characters</small>
+            </div>
+            <div class="comment-form-submit">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('commentForm').reset()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Post Comment</button>
+            </div>
+          </form>
+        <% } else { %>
+          <div class="login-to-comment">
+            <p>Please <a href="/auth/login">login</a> or <a href="/auth/register">register</a> to leave a comment.</p>
+          </div>
+        <% } %>
+
+        <div id="commentsList" class="comments-list" style="margin-top: 1.5rem;">
+          <!-- Comments will be loaded here -->
+        </div>
+      </section>
     </article>
 
     <aside class="article-sidebar">
@@ -126,6 +153,7 @@
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="/js/main.js"></script>
+  <script src="/js/comments.js"></script>
   <script>
     const articleId = '<%= article._id %>';
 
