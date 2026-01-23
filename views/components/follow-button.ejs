@@ -1,0 +1,51 @@
+<!-- Follow Button Component -->
+<!-- Usage: <%- include('./follow-button', { userId: user._id, isFollowing: false, followersCount: 5 }) %> -->
+
+<div class="follow-section">
+  <% if (typeof userId !== 'undefined' && userId) { %>
+    <div class="follow-buttons">
+      <% if (user && user._id && user._id.toString() === userId.toString()) { %>
+        <!-- Self profile - show stats only -->
+        <div class="follow-stats">
+          <div class="follow-stat">
+            <span class="follow-stat-number"><%= followersCount || 0 %></span>
+            <span class="follow-stat-label">Followers</span>
+          </div>
+          <div class="follow-stat">
+            <span class="follow-stat-number"><%= followingCount || 0 %></span>
+            <span class="follow-stat-label">Following</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <button class="view-followers-btn" data-user-id="<%= userId %>">View Followers</button>
+          <button class="view-following-btn" data-user-id="<%= userId %>">View Following</button>
+        </div>
+      <% } else if (user) { %>
+        <!-- Other user profile -->
+        <div class="follow-stats">
+          <div class="follow-stat">
+            <span class="follow-stat-number"><%= followersCount || 0 %></span>
+            <span class="follow-stat-label">Followers</span>
+          </div>
+        </div>
+        <div class="follow-buttons">
+          <% if (isFollowing) { %>
+            <button class="unfollow-btn" data-user-id="<%= userId %>">Following</button>
+          <% } else { %>
+            <button class="follow-btn" data-user-id="<%= userId %>">Follow</button>
+          <% } %>
+          <button class="block-btn" data-user-id="<%= userId %>">Block</button>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+          <button class="view-followers-btn" data-user-id="<%= userId %>">View Followers</button>
+          <button class="view-following-btn" data-user-id="<%= userId %>">View Following</button>
+        </div>
+      <% } else { %>
+        <!-- Not logged in -->
+        <div style="padding: 1rem; background: var(--light-bg); border-radius: 8px; text-align: center;">
+          <p>Please <a href="/auth/login" style="color: var(--primary-color); font-weight: 600;">login</a> to follow users</p>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+</div>

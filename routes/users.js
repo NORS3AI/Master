@@ -40,12 +40,40 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// Get user profile
+// Get current user profile
 router.get('/profile', isAuthenticated, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId);
     res.json(user);
   } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get public user profile by ID
+router.get('/:userId/public', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).select('-password -email -resetPasswordToken -resetPasswordExpires -resetUsernameToken -resetUsernameExpires');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if private and requester is not the user
+    if (!user.isPublic && (!req.session.userId || req.session.userId !== req.params.userId)) {
+      return res.status(403).json({ message: 'This user\'s profile is private' });
+    }
+
+    // Add follow status if user is logged in
+    if (req.session.userId && req.session.userId !== req.params.userId) {
+      const currentUser = await User.findById(req.session.userId);
+      user._doc.isFollowing = currentUser.following.includes(req.params.userId);
+      user._doc.isBlocked = currentUser.blockedUsers.includes(req.params.userId);
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching public profile:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

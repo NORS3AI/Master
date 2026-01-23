@@ -82,6 +82,30 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  followersCount: {
+    type: Number,
+    default: 0
+  },
+  followingCount: {
+    type: Number,
+    default: 0
+  },
+  blockedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  isPublic: {
+    type: Boolean,
+    default: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -125,6 +149,32 @@ userSchema.methods.generateUsernameResetToken = function() {
   this.resetUsernameToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.resetUsernameExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
   return resetToken;
+};
+
+// Method to check if user is following another user
+userSchema.methods.isFollowing = function(userId) {
+  return this.following.includes(userId);
+};
+
+// Method to check if user is blocked
+userSchema.methods.isBlockedBy = function(userId) {
+  return this.blockedUsers.includes(userId);
+};
+
+// Method to get public profile data
+userSchema.methods.getPublicProfile = function() {
+  return {
+    _id: this._id,
+    username: this.username,
+    firstName: this.firstName,
+    lastName: this.lastName,
+    bio: this.bio,
+    profileImage: this.profileImage,
+    followersCount: this.followersCount,
+    followingCount: this.followingCount,
+    isPublic: this.isPublic,
+    createdAt: this.createdAt
+  };
 };
 
 module.exports = mongoose.model('User', userSchema);
