@@ -58,6 +58,10 @@ app.use('/api/stores', require('./routes/stores'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/follows', require('./routes/follows'));
+app.use('/api/activity', require('./routes/activity'));
+app.use('/api/badges', require('./routes/badges'));
+app.use('/api/spotlight', require('./routes/spotlight'));
+app.use('/api/employee-spotlight', require('./routes/employee-spotlight'));
 app.use('/', require('./routes/pages'));
 
 // 404 handler
