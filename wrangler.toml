@@ -16,7 +16,6 @@ routes = [
 ]
 [env.production.vars]
 ENVIRONMENT = "production"
-MONGODB_URI = "mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster.mongodb.net/rsnews"
 
 [env.staging]
 name = "rsnews-staging"
@@ -25,50 +24,11 @@ routes = [
 ]
 [env.staging.vars]
 ENVIRONMENT = "staging"
-MONGODB_URI = "mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@cluster.mongodb.net/rsnews-staging"
 
 [env.development]
 name = "rsnews-dev"
 [env.development.vars]
 ENVIRONMENT = "development"
-MONGODB_URI = "mongodb://localhost:27017/rsnews"
-
-# D1 Database binding
-[[d1_databases]]
-binding = "DB"
-database_name = "rsnews-db1"
-database_id = "rsnews-db1"
-
-# Analytics Engine binding
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-
-# Environment-specific D1 databases
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "rsnews-db1-production"
-database_id = "rsnews-db1-prod"
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "rsnews-db1-staging"
-database_id = "rsnews-db1-staging"
-
-# Environment-specific Analytics
-[[env.production.analytics_engine_datasets]]
-binding = "ANALYTICS"
-
-[[env.staging.analytics_engine_datasets]]
-binding = "ANALYTICS_STAGING"
-
-[[env.development.analytics_engine_datasets]]
-binding = "ANALYTICS_DEV"
-
-# Triggers for scheduled jobs
-[triggers]
-crons = [
-  "0 0 * * *"  # Daily job at midnight UTC
-]
 
 # Observability settings
 [observability]
