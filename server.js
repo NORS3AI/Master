@@ -67,6 +67,7 @@ app.use('/api/badges', require('./routes/badges'));
 app.use('/api/spotlight', require('./routes/spotlight'));
 app.use('/api/employee-spotlight', require('./routes/employee-spotlight'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/content', require('./routes/content-management'));
 app.use('/', require('./routes/pages'));
 
 // 404 handler
