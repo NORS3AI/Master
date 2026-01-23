@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <section class="hero">
+      <h1>RS News</h1>
+      <p class="subtitle">Your Source for Mail & Parcel Service News</p>
+      <p class="description">Stay updated on the latest news from UPS, FedEx, USPS, DHL, and more. Designed for family-owned and operated mail and parcel stores.</p>
+      <% if (!isAuthenticated) { %>
+        <div class="hero-buttons">
+          <a href="/auth/login" class="btn btn-primary">Login</a>
+          <a href="/auth/register" class="btn btn-secondary">Register</a>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="featured-news">
+      <h2>Featured News</h2>
+      <div class="news-grid">
+        <article class="news-card">
+          <h3>UPS Delivery Updates</h3>
+          <p>Latest updates on UPS delivery services and new initiatives.</p>
+          <a href="/news">Read More</a>
+        </article>
+        <article class="news-card">
+          <h3>FedEx Service Changes</h3>
+          <p>Important service changes and announcements from FedEx.</p>
+          <a href="/news">Read More</a>
+        </article>
+        <article class="news-card">
+          <h3>USPS Innovations</h3>
+          <p>New USPS programs and services for small businesses.</p>
+          <a href="/news">Read More</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>Join Our Community</h2>
+      <p>Connect with other mail and parcel store owners and stay informed about industry news.</p>
+      <% if (!isAuthenticated) { %>
+        <a href="/auth/register" class="btn btn-primary">Get Started</a>
+      <% } else { %>
+        <a href="/my-account" class="btn btn-primary">Go to Your Account</a>
+      <% } %>
+    </section>
+  </div>
+
+  <%-include('../components/footer') %>
+</body>
+</html>

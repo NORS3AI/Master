@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Username - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <div class="auth-container">
+      <h1>Reset Your Username</h1>
+      <p>Choose a new username below.</p>
+
+      <form id="resetUsernameForm" class="auth-form">
+        <div class="form-group">
+          <label for="newUsername">New Username</label>
+          <input type="text" id="newUsername" name="newUsername" required minlength="3">
+          <span class="error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Reset Username</button>
+      </form>
+    </div>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <script>
+    const token = '<%= token %>';
+
+    $('#resetUsernameForm').on('submit', function(e) {
+      e.preventDefault();
+      const newUsername = $('#newUsername').val();
+
+      $.ajax({
+        url: '/auth/reset-username/' + token,
+        type: 'POST',
+        data: { newUsername },
+        success: function(response) {
+          alert('Username reset successfully! Please login with your new username.');
+          window.location.href = response.redirect;
+        },
+        error: function(xhr) {
+          const message = xhr.responseJSON?.message || 'Failed to reset username';
+          alert(message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

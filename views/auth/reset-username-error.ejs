@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Username - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <div class="auth-container error-container">
+      <h1>Username Reset Error</h1>
+      <p class="error-message"><%= message %></p>
+      <p>Your reset link may have expired or be invalid. Please try again.</p>
+      <a href="/auth/forgot-username" class="btn btn-primary">Request New Reset Link</a>
+    </div>
+  </div>
+
+  <%-include('../components/footer') %>
+</body>
+</html>
