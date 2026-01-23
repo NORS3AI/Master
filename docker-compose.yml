@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: rs-news-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: mongodb-password
+      MONGO_INITDB_DATABASE: rs-news
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - rs-news-network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: rs-news-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://admin:mongodb-password@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    depends_on:
+      - mongodb
+    networks:
+      - rs-news-network
+
+  rs-news:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rs-news-app
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://admin:mongodb-password@mongodb:27017/rs-news
+      SESSION_SECRET: your-super-secret-session-key-change-this-in-production
+      NODE_ENV: development
+    depends_on:
+      - mongodb
+    networks:
+      - rs-news-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+
+networks:
+  rs-news-network:
+    driver: bridge
