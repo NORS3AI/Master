@@ -66,4 +66,68 @@ router.get('/articles/:id', async (req, res) => {
   }
 });
 
+// Spotlight page
+router.get('/spotlight', async (req, res) => {
+  try {
+    const Store = require('../models/Store');
+    const now = new Date();
+
+    // Get current spotlight stores
+    const spotlightStores = await Store.find({
+      isSpotlight: true,
+      spotlightStartDate: { $lte: now },
+      spotlightEndDate: { $gte: now }
+    }).sort({ votes: -1 }).limit(3);
+
+    // Get top nominated stores for next spotlight
+    const topNominated = await Store.find({
+      isSpotlight: false
+    }).sort({ nominationCount: -1 }).limit(5);
+
+    res.render('pages/spotlight', {
+      spotlightStores,
+      topNominated,
+      isAuthenticated: !!req.session.userId,
+      userId: req.session.userId,
+      username: req.session.username
+    });
+  } catch (error) {
+    console.error('Error fetching spotlight page:', error);
+    res.status(500).render('error', { message: 'Server error' });
+  }
+});
+
+// Store profile page
+router.get('/stores/:id', async (req, res) => {
+  try {
+    const Store = require('../models/Store');
+    const store = await Store.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } }, { new: true });
+
+    if (!store) {
+      return res.status(404).render('error', { message: 'Store not found' });
+    }
+
+    const ogData = {
+      title: store.name,
+      description: store.description,
+      image: store.image || store.logo || `${process.env.APP_URL || 'http://localhost:5000'}/images/logo.png`,
+      url: `${process.env.APP_URL || 'http://localhost:5000'}/stores/${store._id}`,
+      type: 'business.business',
+      author: store.owner,
+      location: `${store.city}, ${store.state}`
+    };
+
+    res.render('pages/store', {
+      store,
+      ogData,
+      isAuthenticated: !!req.session.userId,
+      userId: req.session.userId,
+      username: req.session.username
+    });
+  } catch (error) {
+    console.error('Error fetching store:', error);
+    res.status(500).render('error', { message: 'Server error' });
+  }
+});
+
 module.exports = router;

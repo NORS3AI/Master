@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= store.name %> - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- OG Meta Tags -->
+  <meta property="og:title" content="<%= store.name %>">
+  <meta property="og:description" content="<%= store.description %>">
+  <meta property="og:image" content="<%= ogData.image %>">
+  <meta property="og:url" content="<%= ogData.url %>">
+  <meta property="og:type" content="<%= ogData.type %>">
+
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= store.name %>">
+  <meta name="twitter:description" content="<%= store.description %>">
+  <meta name="twitter:image" content="<%= ogData.image %>">
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="<%= store.description %>">
+  <meta name="keywords" content="<%= store.services.join(', ') %>, mail, parcel, shipping">
+  <meta name="author" content="<%= store.owner %>">
+</head>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %>>
+  <%-include('../components/navbar') %>
+
+  <div class="container store-page">
+    <div class="store-header">
+      <div class="store-header-image">
+        <% if (store.image) { %>
+          <img src="<%= store.image %>" alt="<%= store.name %>">
+        <% } else { %>
+          <div class="store-header-placeholder">📦</div>
+        <% } %>
+        <% if (store.isSpotlight) { %>
+          <div class="spotlight-badge-large">⭐ Featured Store</div>
+        <% } %>
+      </div>
+
+      <div class="store-header-info">
+        <h1><%= store.name %></h1>
+        <% if (store.owner) { %>
+          <p class="store-owner">Owner: <strong><%= store.owner %></strong></p>
+        <% } %>
+        <p class="store-location">📍 <%= store.city %>, <%= store.state %>, <%= store.country %></p>
+
+        <div class="store-contact">
+          <% if (store.phone) { %>
+            <a href="tel:<%= store.phone %>" class="contact-link">📞 <%= store.phone %></a>
+          <% } %>
+          <% if (store.email) { %>
+            <a href="mailto:<%= store.email %>" class="contact-link">✉️ <%= store.email %></a>
+          <% } %>
+          <% if (store.website) { %>
+            <a href="<%= store.website %>" target="_blank" class="contact-link">🌐 Website</a>
+          <% } %>
+        </div>
+
+        <div class="store-stats">
+          <div class="stat">
+            <strong><%= store.views %></strong>
+            <small>Views</small>
+          </div>
+          <div class="stat">
+            <strong><%= store.votes %></strong>
+            <small>Votes</small>
+          </div>
+          <div class="stat">
+            <strong><%= store.nominationCount %></strong>
+            <small>Nominations</small>
+          </div>
+        </div>
+
+        <div class="store-actions">
+          <button class="btn btn-primary" onclick="voteForStore('<%= store._id %>')">👍 Vote for This Store</button>
+          <button class="btn btn-secondary" onclick="nominateStore('<%= store._id %>')">🎯 Nominate for Spotlight</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="store-content">
+      <div class="store-main">
+        <section class="store-section">
+          <h2>About</h2>
+          <p><%= store.description %></p>
+          <% if (store.bio) { %>
+            <p><%= store.bio %></p>
+          <% } %>
+        </section>
+
+        <section class="store-section">
+          <h2>Services</h2>
+          <div class="services-list">
+            <% store.services.forEach(service => { %>
+              <div class="service-chip"><%= service %></div>
+            <% }) %>
+          </div>
+        </section>
+
+        <% if (store.socialMedia && (store.socialMedia.facebook || store.socialMedia.twitter || store.socialMedia.instagram || store.socialMedia.linkedin)) { %>
+          <section class="store-section">
+            <h2>Follow Them</h2>
+            <div class="social-links">
+              <% if (store.socialMedia.facebook) { %>
+                <a href="<%= store.socialMedia.facebook %>" target="_blank" class="social-link facebook">Facebook</a>
+              <% } %>
+              <% if (store.socialMedia.twitter) { %>
+                <a href="<%= store.socialMedia.twitter %>" target="_blank" class="social-link twitter">Twitter</a>
+              <% } %>
+              <% if (store.socialMedia.instagram) { %>
+                <a href="<%= store.socialMedia.instagram %>" target="_blank" class="social-link instagram">Instagram</a>
+              <% } %>
+              <% if (store.socialMedia.linkedin) { %>
+                <a href="<%= store.socialMedia.linkedin %>" target="_blank" class="social-link linkedin">LinkedIn</a>
+              <% } %>
+            </div>
+          </section>
+        <% } %>
+
+        <section class="store-section">
+          <h2>Share This Store</h2>
+          <div class="share-buttons-full">
+            <a href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(`Check out ${store.name} - ${store.description}`) %>&url=<%= encodeURIComponent(ogData.url) %>"
+               target="_blank" class="share-link twitter">Share on Twitter</a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(ogData.url) %>"
+               target="_blank" class="share-link facebook">Share on Facebook</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=<%= encodeURIComponent(ogData.url) %>"
+               target="_blank" class="share-link linkedin">Share on LinkedIn</a>
+            <button class="share-link copy" onclick="copyStoreLink()">Copy Link</button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="store-sidebar">
+        <div class="sidebar-section">
+          <h3>Quick Info</h3>
+          <div class="info-item">
+            <strong>Location:</strong>
+            <p><%= store.city %>, <%= store.state %></p>
+          </div>
+          <div class="info-item">
+            <strong>Owner:</strong>
+            <p><%= store.owner || 'N/A' %></p>
+          </div>
+          <div class="info-item">
+            <strong>Community Score:</strong>
+            <p><%= store.votes %> votes</p>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>Spotlight Info</h3>
+          <% if (store.isSpotlight) { %>
+            <p style="color: var(--success-color); font-weight: 500;">⭐ Currently Featured</p>
+            <p>Featured from <%= new Date(store.spotlightStartDate).toLocaleDateString() %> to <%= new Date(store.spotlightEndDate).toLocaleDateString() %></p>
+          <% } else { %>
+            <p>Not currently featured</p>
+            <p>Nominate this store to help get it featured next month!</p>
+          <% } %>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Related Stores -->
+    <section class="related-stores" id="relatedStoresSection" style="display:none;">
+      <h2>Related Stores</h2>
+      <div class="related-grid" id="relatedGrid"></div>
+    </section>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    const storeId = '<%= store._id %>';
+
+    function copyStoreLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        showNotification('Store link copied to clipboard!', 'success');
+      }).catch(() => {
+        showNotification('Failed to copy link', 'error');
+      });
+    }
+
+    function voteForStore(id) {
+      fetch(`/api/stores/${id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(res => res.json())
+        .then(data => {
+          showNotification('Vote recorded! Thanks for supporting this store.', 'success');
+          setTimeout(() => location.reload(), 1000);
+        })
+        .catch(err => {
+          showNotification('Failed to record vote', 'error');
+          console.error('Error:', err);
+        });
+    }
+
+    function nominateStore(id) {
+      fetch(`/api/stores/${id}/nominate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(res => res.json())
+        .then(data => {
+          showNotification('Store nominated for next month\'s spotlight!', 'success');
+          setTimeout(() => location.reload(), 1000);
+        })
+        .catch(err => {
+          showNotification('Failed to nominate store', 'error');
+          console.error('Error:', err);
+        });
+    }
+  </script>
+</body>
+</html>

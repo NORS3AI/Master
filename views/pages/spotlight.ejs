@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Spotlight - RS News</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body <% if (isAuthenticated) { %>data-user-id="<%= userId %>"<% } %>>
+  <%-include('../components/navbar') %>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Store Spotlight</h1>
+      <p>Celebrating exceptional family-owned mail and parcel stores across the United States</p>
+    </div>
+
+    <!-- Current Spotlight Stores -->
+    <section class="spotlight-featured">
+      <h2>Featured Stores This Month</h2>
+      <% if (spotlightStores.length > 0) { %>
+        <div class="spotlight-carousel">
+          <% spotlightStores.forEach(store => { %>
+            <div class="spotlight-card">
+              <div class="spotlight-image-container">
+                <% if (store.image) { %>
+                  <img src="<%= store.image %>" alt="<%= store.name %>" class="spotlight-image">
+                <% } else if (store.logo) { %>
+                  <img src="<%= store.logo %>" alt="<%= store.name %>" class="spotlight-image">
+                <% } else { %>
+                  <div class="spotlight-image-placeholder">📍</div>
+                <% } %>
+                <div class="spotlight-badge">Featured</div>
+              </div>
+              <div class="spotlight-info">
+                <h3><%= store.name %></h3>
+                <p class="store-location">📍 <%= store.city %>, <%= store.state %></p>
+                <p class="store-description"><%= store.description.substring(0, 150) %>...</p>
+                <div class="store-services">
+                  <% store.services.forEach(service => { %>
+                    <span class="service-tag"><%= service %></span>
+                  <% }) %>
+                </div>
+                <div class="store-stats">
+                  <span class="stat">
+                    <strong><%= store.votes %></strong>
+                    <small>Votes</small>
+                  </span>
+                  <span class="stat">
+                    <strong><%= store.views %></strong>
+                    <small>Views</small>
+                  </span>
+                </div>
+                <a href="/stores/<%= store._id %>" class="btn btn-primary">View Store</a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="no-stores">No featured stores this month. Check back soon!</p>
+      <% } %>
+    </section>
+
+    <!-- Top Nominated Stores -->
+    <section class="spotlight-nominees">
+      <h2>Top Nominees for Next Month</h2>
+      <p>These stores are leading the nominations for next month's spotlight. Vote to help them become featured!</p>
+
+      <% if (topNominated.length > 0) { %>
+        <div class="nominees-grid">
+          <% topNominated.forEach(store => { %>
+            <div class="nominee-card">
+              <div class="nominee-image-container">
+                <% if (store.image) { %>
+                  <img src="<%= store.image %>" alt="<%= store.name %>">
+                <% } else if (store.logo) { %>
+                  <img src="<%= store.logo %>" alt="<%= store.name %>">
+                <% } else { %>
+                  <div class="nominee-image-placeholder">📦</div>
+                <% } %>
+              </div>
+              <div class="nominee-info">
+                <h3><%= store.name %></h3>
+                <p class="nominee-location"><%= store.city %>, <%= store.state %></p>
+                <div class="nominee-stats">
+                  <div class="stat-item">
+                    <span class="label">Nominations:</span>
+                    <span class="value"><%= store.nominationCount %></span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="label">Votes:</span>
+                    <span class="value"><%= store.votes %></span>
+                  </div>
+                </div>
+                <div class="nominee-actions">
+                  <button class="btn btn-secondary" onclick="voteForStore('<%= store._id %>')">👍 Vote</button>
+                  <a href="/stores/<%= store._id %>" class="btn btn-outline">View</a>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="no-stores">No nominees yet. Be the first to nominate a store!</p>
+      <% } %>
+    </section>
+
+    <!-- How It Works -->
+    <section class="spotlight-info">
+      <h2>How Store Spotlight Works</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-number">1</div>
+          <h3>Nominate</h3>
+          <p>Nominate your favorite family-owned mail and parcel store to be considered for the spotlight.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-number">2</div>
+          <h3>Vote</h3>
+          <p>Community members vote for their top choices. The highest voted stores move to the spotlight.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-number">3</div>
+          <h3>Featured</h3>
+          <p>Winning stores are featured on our homepage and get promoted across our platform for a full month.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <h2>Know a Great Store?</h2>
+      <p>Nominate your favorite family-owned mail and parcel store for next month's spotlight!</p>
+      <button class="btn btn-primary" onclick="showNominationModal()">Nominate a Store</button>
+    </section>
+  </div>
+
+  <%-include('../components/footer') %>
+
+  <!-- Nomination Modal -->
+  <div class="modal-overlay" id="nominationModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Nominate a Store</h2>
+        <button class="modal-close" onclick="closeNominationModal()">×</button>
+      </div>
+      <form id="nominationForm" style="padding: 1.5rem;">
+        <div class="form-group">
+          <label for="storeName">Store Name *</label>
+          <input type="text" id="storeName" name="storeName" required>
+        </div>
+        <div class="form-group">
+          <label for="storeLocation">City, State *</label>
+          <input type="text" id="storeLocation" name="storeLocation" placeholder="e.g., New York, NY" required>
+        </div>
+        <div class="form-group">
+          <label for="storeEmail">Store Email</label>
+          <input type="email" id="storeEmail" name="storeEmail">
+        </div>
+        <div class="form-group">
+          <label for="nominationReason">Why Should They Be Spotlight? *</label>
+          <textarea id="nominationReason" name="nominationReason" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Nomination</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    function showNominationModal() {
+      document.getElementById('nominationModal').classList.add('active');
+    }
+
+    function closeNominationModal() {
+      document.getElementById('nominationModal').classList.remove('active');
+    }
+
+    function voteForStore(storeId) {
+      fetch(`/api/stores/${storeId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(res => res.json())
+        .then(data => {
+          showNotification('Vote recorded! Thanks for supporting this store.', 'success');
+          location.reload();
+        })
+        .catch(err => {
+          showNotification('Failed to record vote', 'error');
+          console.error('Error voting:', err);
+        });
+    }
+
+    document.getElementById('nominationForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const nomination = {
+        storeName: document.getElementById('storeName').value,
+        location: document.getElementById('storeLocation').value,
+        email: document.getElementById('storeEmail').value,
+        reason: document.getElementById('nominationReason').value
+      };
+
+      showNotification('Thank you for the nomination! We will review it soon.', 'success');
+      closeNominationModal();
+      this.reset();
+    });
+
+    // Close modal when clicking overlay
+    document.getElementById('nominationModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeNominationModal();
+      }
+    });
+  </script>
+</body>
+</html>
