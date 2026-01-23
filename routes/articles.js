@@ -92,4 +92,27 @@ router.get('/:id/is-favorited', isAuthenticated, async (req, res) => {
   }
 });
 
+// Track article share
+router.post('/:id/share', async (req, res) => {
+  try {
+    const articleId = req.params.id;
+    const { platform } = req.body;
+
+    const article = await Article.findByIdAndUpdate(
+      articleId,
+      { $inc: { shares: 1, [`shares_${platform}`]: 1 } },
+      { new: true }
+    );
+
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+
+    res.json({ message: 'Share tracked', shares: article.shares });
+  } catch (error) {
+    console.error('Error tracking share:', error);
+    res.status(500).json({ message: 'Failed to track share' });
+  }
+});
+
 module.exports = router;

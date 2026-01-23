@@ -28,6 +28,23 @@ class ArticleModal {
             <div id="articleMeta" class="modal-meta"></div>
             <img id="articleImage" class="modal-image" alt="Article image">
             <div class="modal-body" id="articleBody"></div>
+            <div class="modal-share-buttons">
+              <button class="share-btn share-twitter" id="shareTwitterBtn" title="Share on Twitter">
+                <span>𝕏</span>
+              </button>
+              <button class="share-btn share-facebook" id="shareFacebookBtn" title="Share on Facebook">
+                <span>f</span>
+              </button>
+              <button class="share-btn share-linkedin" id="shareLinkedInBtn" title="Share on LinkedIn">
+                <span>in</span>
+              </button>
+              <button class="share-btn share-email" id="shareEmailBtn" title="Share via Email">
+                <span>✉</span>
+              </button>
+              <button class="share-btn share-copy" id="shareCopyBtn" title="Copy link">
+                <span>🔗</span>
+              </button>
+            </div>
             <div class="modal-footer">
               <button class="modal-favorite-btn" id="favoriteBtn"></button>
             </div>
@@ -46,6 +63,13 @@ class ArticleModal {
     const sideRight = document.getElementById('modalSideRight');
     const favoriteBtn = document.getElementById('favoriteBtn');
 
+    // Share buttons
+    const shareTwitterBtn = document.getElementById('shareTwitterBtn');
+    const shareFacebookBtn = document.getElementById('shareFacebookBtn');
+    const shareLinkedInBtn = document.getElementById('shareLinkedInBtn');
+    const shareEmailBtn = document.getElementById('shareEmailBtn');
+    const shareCopyBtn = document.getElementById('shareCopyBtn');
+
     closeBtn.addEventListener('click', () => this.closeModal());
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.closeModal();
@@ -55,6 +79,12 @@ class ArticleModal {
     sideRight.addEventListener('click', () => this.nextArticle());
 
     favoriteBtn.addEventListener('click', () => this.toggleFavorite());
+
+    shareTwitterBtn.addEventListener('click', () => this.shareOnTwitter());
+    shareFacebookBtn.addEventListener('click', () => this.shareOnFacebook());
+    shareLinkedInBtn.addEventListener('click', () => this.shareOnLinkedIn());
+    shareEmailBtn.addEventListener('click', () => this.shareViaEmail());
+    shareCopyBtn.addEventListener('click', () => this.copyShareLink());
 
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
@@ -213,6 +243,65 @@ class ArticleModal {
       this.currentIndex--;
       this.displayArticle();
     }
+  }
+
+  getShareUrl() {
+    if (this.currentIndex < 0 || this.currentIndex >= this.articles.length) return '';
+    const article = this.articles[this.currentIndex];
+    return `${window.location.origin}/articles/${article._id}`;
+  }
+
+  trackShare(platform) {
+    const article = this.articles[this.currentIndex];
+    fetch(`/api/articles/${article._id}/share`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ platform })
+    }).catch(err => console.error('Error tracking share:', err));
+  }
+
+  shareOnTwitter() {
+    const article = this.articles[this.currentIndex];
+    const url = this.getShareUrl();
+    const text = `Check out: "${article.title}" on RS News - ${article.description}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}&hashtags=shipping,parcel,mail`;
+    this.trackShare('twitter');
+    window.open(twitterUrl, 'twitter-share', 'width=550,height=420');
+  }
+
+  shareOnFacebook() {
+    const url = this.getShareUrl();
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    this.trackShare('facebook');
+    window.open(facebookUrl, 'facebook-share', 'width=550,height=420');
+  }
+
+  shareOnLinkedIn() {
+    const article = this.articles[this.currentIndex];
+    const url = this.getShareUrl();
+    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+    this.trackShare('linkedin');
+    window.open(linkedinUrl, 'linkedin-share', 'width=550,height=420');
+  }
+
+  shareViaEmail() {
+    const article = this.articles[this.currentIndex];
+    const url = this.getShareUrl();
+    const subject = `Check out this article: ${article.title}`;
+    const body = `Hi,\n\nI thought you might be interested in this article on RS News:\n\n${article.title}\n${article.description}\n\nRead more: ${url}\n\nBest regards`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    this.trackShare('email');
+    window.location.href = mailtoUrl;
+  }
+
+  copyShareLink() {
+    const url = this.getShareUrl();
+    navigator.clipboard.writeText(url).then(() => {
+      this.trackShare('copy');
+      showNotification('Link copied to clipboard!', 'success');
+    }).catch(() => {
+      showNotification('Failed to copy link', 'error');
+    });
   }
 
   openModal() {

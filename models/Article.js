@@ -38,6 +38,30 @@ const articleSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  shares: {
+    type: Number,
+    default: 0
+  },
+  shares_twitter: {
+    type: Number,
+    default: 0
+  },
+  shares_facebook: {
+    type: Number,
+    default: 0
+  },
+  shares_linkedin: {
+    type: Number,
+    default: 0
+  },
+  shares_email: {
+    type: Number,
+    default: 0
+  },
+  views: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now
