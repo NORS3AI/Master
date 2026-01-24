@@ -17,6 +17,11 @@ routes = [
 [env.production.vars]
 ENVIRONMENT = "production"
 
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "rsnews-db1"
+database_id = "2e425404-3a10-482b-ae84-31271aa000ba"
+
 [env.staging]
 name = "rsnews-staging"
 routes = [

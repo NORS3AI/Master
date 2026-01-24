@@ -142,12 +142,12 @@ CREATE TABLE IF NOT EXISTS categories (
   description TEXT,
   icon TEXT,
   color TEXT,
-  order INTEGER DEFAULT 0,
+  sort_order INTEGER DEFAULT 0,
   createdAt INTEGER NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
-CREATE INDEX IF NOT EXISTS idx_categories_order ON categories(order);
+CREATE INDEX IF NOT EXISTS idx_categories_order ON categories(sort_order);
 
 -- ============================================================
 -- Badges & Achievements
