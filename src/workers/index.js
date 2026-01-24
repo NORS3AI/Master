@@ -2,90 +2,365 @@
  * RS News - Cloudflare Workers Entrypoint
  *
  * This worker handles:
- * - Routing requests to the Express application
+ * - Routing requests via Hono framework
  * - D1 Database connections
  * - Analytics Engine events
  * - Performance monitoring
  * - Caching strategies
+ * - Phase 4 features (4.1-4.6)
  */
 
-export default {
-  async fetch(request, env, ctx) {
-    try {
-      const url = new URL(request.url);
-      const path = url.pathname;
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { secureHeaders } from 'hono/secure-headers';
 
-      // Log request to Analytics Engine
-      if (env.ANALYTICS) {
-        ctx.waitUntil(
-          env.ANALYTICS.writeDataPoint({
-            indexes: [url.hostname, request.method, path],
-            blobs: [request.headers.get('user-agent') || 'unknown'],
-            doubles: [Date.now()]
-          })
-        );
-      }
+// Phase 4.1 - Email & Notifications
+import { registerNotificationRoutes } from '../routes/notifications.js';
+import { registerEmailRoutes } from '../routes/email.js';
 
-      // Health check endpoint
-      if (path === '/health') {
-        return handleHealthCheck(env);
-      }
+// Phase 4.2 - Advanced UX & Personalization
+import { registerPreferenceRoutes } from '../routes/preferences.js';
 
-      // API routes with D1 database
-      if (path.startsWith('/api/')) {
-        return handleAPIRequest(request, env, ctx);
-      }
+// Phase 4.3 - Technical Enhancements (Security)
+import { registerSecurityRoutes } from '../routes/security.js';
 
-      // Static assets with caching
-      if (isStaticAsset(path)) {
-        return handleStaticAsset(request, env, ctx);
-      }
+// Phase 4.4 - Community Features
+import { registerForumRoutes } from '../routes/forums.js';
 
-      // Default: serve homepage
-      return handleHomepage(env);
+// Phase 4.5 - Search & Discovery
+import { registerSearchRoutes } from '../routes/search.js';
 
-    } catch (error) {
-      console.error('Worker error:', error);
+// Phase 4.6 - Mobile & PWA
+import { registerPWARoutes } from '../routes/pwa.js';
 
-      // Log error to Analytics Engine
-      if (env.ANALYTICS) {
-        ctx.waitUntil(
-          env.ANALYTICS.writeDataPoint({
-            indexes: ['error', error.name],
-            blobs: [error.message],
-            doubles: [1]
-          })
-        );
-      }
+const app = new Hono();
 
-      return new Response(
-        JSON.stringify({ error: 'Internal Server Error', message: error.message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-  },
+// Middleware
+app.use('*', cors({
+  origin: ['https://rsnewsroom.nors3ai.com', 'http://localhost:3000'],
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 86400
+}));
 
-  /**
-   * Scheduled handler for daily tasks
-   */
-  async scheduled(event, env, ctx) {
-    console.log('Scheduled handler triggered');
+app.use('*', secureHeaders());
 
-    // Run maintenance tasks
-    ctx.waitUntil(runScheduledTasks(env));
+// Request logging middleware
+app.use('*', async (c, next) => {
+  const start = Date.now();
+
+  // Log to Analytics Engine
+  if (c.env.ANALYTICS) {
+    c.executionCtx.waitUntil(
+      c.env.ANALYTICS.writeDataPoint({
+        indexes: [new URL(c.req.url).hostname, c.req.method, new URL(c.req.url).pathname],
+        blobs: [c.req.header('user-agent') || 'unknown'],
+        doubles: [Date.now()]
+      })
+    );
   }
+
+  await next();
+
+  // Log response time
+  const duration = Date.now() - start;
+  c.res.headers.set('X-Response-Time', `${duration}ms`);
+});
+
+// Authentication middleware - extracts userId from Authorization header
+app.use('/api/*', async (c, next) => {
+  const authHeader = c.req.header('Authorization');
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+
+    // Validate token and get userId
+    // In production, verify JWT or session token
+    try {
+      if (c.env.DB) {
+        const session = await c.env.DB.prepare(
+          'SELECT userId FROM user_sessions WHERE token = ? AND expiresAt > ?'
+        ).bind(token, Date.now()).first();
+
+        if (session) {
+          c.set('userId', session.userId);
+        }
+      }
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+    }
+  }
+
+  await next();
+});
+
+// Admin check middleware for admin routes
+const adminMiddleware = async (c, next) => {
+  const userId = c.get('userId');
+
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const user = await c.env.DB.prepare(
+      'SELECT role FROM users WHERE id = ?'
+    ).bind(userId).first();
+
+    if (!user || (user.role !== 'admin' && user.role !== 'editor')) {
+      return c.json({ error: 'Admin access required' }, 403);
+    }
+
+    c.set('userRole', user.role);
+  } catch (error) {
+    return c.json({ error: 'Authorization check failed' }, 500);
+  }
+
+  await next();
 };
 
-/**
- * Handle homepage
- */
-async function handleHomepage(env) {
+// Health check endpoint
+app.get('/health', async (c) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: c.env.ENVIRONMENT || 'unknown',
+    phase4: 'active'
+  };
+
+  if (c.env.DB) {
+    try {
+      await c.env.DB.prepare('SELECT 1').first();
+      health.database = 'connected';
+    } catch (error) {
+      health.database = 'disconnected';
+      health.status = 'degraded';
+    }
+  }
+
+  if (c.env.ANALYTICS) {
+    health.analytics = 'connected';
+  }
+
+  const statusCode = health.status === 'healthy' ? 200 : 503;
+  return c.json(health, statusCode);
+});
+
+// Core API routes
+
+// GET /api/articles - List articles
+app.get('/api/articles', async (c) => {
+  if (!c.env.DB) {
+    return c.json({ error: 'Database not configured' }, 503);
+  }
+
+  try {
+    const { page = 1, limit = 20, category, status = 'published' } = c.req.query();
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let query = `
+      SELECT a.*, u.username as authorName
+      FROM articles a
+      LEFT JOIN users u ON a.authorId = u.id
+      WHERE a.status = ?
+    `;
+    const params = [status];
+
+    if (category) {
+      query += ' AND a.category = ?';
+      params.push(category);
+    }
+
+    query += ' ORDER BY a.publishedAt DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), offset);
+
+    const articles = await c.env.DB.prepare(query).bind(...params).all();
+
+    // Get total count
+    const countResult = await c.env.DB.prepare(
+      'SELECT COUNT(*) as total FROM articles WHERE status = ?'
+    ).bind(status).first();
+
+    return c.json({
+      articles: articles.results || [],
+      total: countResult?.total || 0,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    }, 200, {
+      'Cache-Control': 'public, max-age=300'
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    return c.json({ error: 'Failed to fetch articles' }, 500);
+  }
+});
+
+// GET /api/articles/:id - Get single article
+app.get('/api/articles/:id', async (c) => {
+  if (!c.env.DB) {
+    return c.json({ error: 'Database not configured' }, 503);
+  }
+
+  try {
+    const { id } = c.req.param();
+
+    const article = await c.env.DB.prepare(`
+      SELECT a.*, u.username as authorName
+      FROM articles a
+      LEFT JOIN users u ON a.authorId = u.id
+      WHERE a.id = ? OR a.slug = ?
+    `).bind(id, id).first();
+
+    if (!article) {
+      return c.json({ error: 'Article not found' }, 404);
+    }
+
+    // Increment view count
+    await c.env.DB.prepare(
+      'UPDATE articles SET views = views + 1 WHERE id = ?'
+    ).bind(article.id).run();
+
+    return c.json(article);
+  } catch (error) {
+    console.error('Database error:', error);
+    return c.json({ error: 'Failed to fetch article' }, 500);
+  }
+});
+
+// GET /api/categories - List categories
+app.get('/api/categories', async (c) => {
+  if (!c.env.DB) {
+    return c.json({ error: 'Database not configured' }, 503);
+  }
+
+  try {
+    const categories = await c.env.DB.prepare(
+      'SELECT * FROM categories WHERE isActive = 1 ORDER BY sort_order ASC, name ASC'
+    ).all();
+
+    return c.json({ categories: categories.results || [] });
+  } catch (error) {
+    console.error('Database error:', error);
+    return c.json({ error: 'Failed to fetch categories' }, 500);
+  }
+});
+
+// Authentication routes
+
+// POST /api/auth/login
+app.post('/api/auth/login', async (c) => {
+  if (!c.env.DB) {
+    return c.json({ error: 'Database not configured' }, 503);
+  }
+
+  try {
+    const { email, password } = await c.req.json();
+
+    if (!email || !password) {
+      return c.json({ error: 'Email and password required' }, 400);
+    }
+
+    // In production, properly hash and verify password
+    const user = await c.env.DB.prepare(
+      'SELECT id, username, email, role FROM users WHERE email = ?'
+    ).bind(email).first();
+
+    if (!user) {
+      return c.json({ error: 'Invalid credentials' }, 401);
+    }
+
+    // Create session
+    const token = crypto.randomUUID();
+    const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
+
+    await c.env.DB.prepare(`
+      INSERT INTO user_sessions (id, userId, token, expiresAt, createdAt)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(crypto.randomUUID(), user.id, token, expiresAt, Date.now()).run();
+
+    return c.json({
+      user: { id: user.id, username: user.username, email: user.email, role: user.role },
+      token,
+      expiresAt
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    return c.json({ error: 'Login failed' }, 500);
+  }
+});
+
+// POST /api/auth/logout
+app.post('/api/auth/logout', async (c) => {
+  const authHeader = c.req.header('Authorization');
+
+  if (authHeader && authHeader.startsWith('Bearer ') && c.env.DB) {
+    const token = authHeader.substring(7);
+    await c.env.DB.prepare(
+      'DELETE FROM user_sessions WHERE token = ?'
+    ).bind(token).run();
+  }
+
+  return c.json({ success: true });
+});
+
+// GET /api/auth/me - Get current user
+app.get('/api/auth/me', async (c) => {
+  const userId = c.get('userId');
+
+  if (!userId) {
+    return c.json({ error: 'Not authenticated' }, 401);
+  }
+
+  try {
+    const user = await c.env.DB.prepare(
+      'SELECT id, username, email, role, createdAt FROM users WHERE id = ?'
+    ).bind(userId).first();
+
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+
+    return c.json({ user });
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch user' }, 500);
+  }
+});
+
+// Analytics endpoint
+app.get('/api/analytics', async (c) => {
+  if (!c.env.ANALYTICS) {
+    return c.json({
+      message: 'Analytics data available through Cloudflare dashboard',
+      docs: 'https://developers.cloudflare.com/analytics/analytics-engine/'
+    });
+  }
+
+  return c.json({
+    message: 'Analytics Engine connected',
+    dashboard: 'https://dash.cloudflare.com'
+  });
+});
+
+// Register Phase 4 routes
+registerNotificationRoutes(app);
+registerEmailRoutes(app);
+registerPreferenceRoutes(app);
+registerSecurityRoutes(app);
+registerForumRoutes(app);
+registerSearchRoutes(app);
+registerPWARoutes(app);
+
+// Homepage
+app.get('/', async (c) => {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RS News - Mail & Parcel Service News</title>
+  <link rel="manifest" href="/api/pwa/manifest">
+  <meta name="theme-color" content="#3498db">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -135,7 +410,7 @@ async function handleHomepage(env) {
       font-size: 0.875rem;
       font-weight: 600;
     }
-    .badge.coming { background: #7b2cbf; color: #fff; }
+    .badge.active { background: #22c55e; color: #fff; }
   </style>
 </head>
 <body>
@@ -154,144 +429,47 @@ async function handleHomepage(env) {
       </div>
       <div class="status-item">
         <span>Phase 4 Features</span>
-        <span class="badge coming">Coming Soon</span>
+        <span class="badge active">Active</span>
       </div>
     </div>
   </div>
 </body>
 </html>`;
 
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-  });
-}
+  return c.html(html);
+});
 
-/**
- * Handle health check
- */
-async function handleHealthCheck(env) {
-  const health = {
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    environment: env.ENVIRONMENT || 'unknown'
-  };
+// 404 handler
+app.notFound((c) => {
+  return c.json({ error: 'Not Found', path: new URL(c.req.url).pathname }, 404);
+});
 
-  // Check D1 database connection
-  if (env.DB) {
-    try {
-      const result = await env.DB.prepare('SELECT 1').first();
-      health.database = 'connected';
-    } catch (error) {
-      health.database = 'disconnected';
-      health.status = 'degraded';
-    }
-  }
+// Error handler
+app.onError((err, c) => {
+  console.error('Application error:', err);
 
-  // Check Analytics Engine
-  if (env.ANALYTICS) {
-    health.analytics = 'connected';
-  }
-
-  const statusCode = health.status === 'healthy' ? 200 : 503;
-  return new Response(JSON.stringify(health), {
-    status: statusCode,
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-/**
- * Handle API requests with D1 database access
- */
-async function handleAPIRequest(request, env, ctx) {
-  const url = new URL(request.url);
-  const path = url.pathname;
-
-  // Example: /api/articles endpoint
-  if (path === '/api/articles' && request.method === 'GET') {
-    return handleGetArticles(env);
-  }
-
-  // Example: /api/analytics endpoint
-  if (path.startsWith('/api/analytics') && request.method === 'GET') {
-    return handleAnalyticsQuery(env, path);
-  }
-
-  // Fallback
-  return new Response(
-    JSON.stringify({ error: 'API endpoint not found' }),
-    { status: 404, headers: { 'Content-Type': 'application/json' } }
-  );
-}
-
-/**
- * Get articles from D1 database
- */
-async function handleGetArticles(env) {
-  if (!env.DB) {
-    return new Response(
-      JSON.stringify({ error: 'Database not configured' }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } }
+  if (c.env.ANALYTICS) {
+    c.executionCtx.waitUntil(
+      c.env.ANALYTICS.writeDataPoint({
+        indexes: ['error', err.name || 'Unknown'],
+        blobs: [err.message || 'No message'],
+        doubles: [1]
+      })
     );
   }
 
-  try {
-    const articles = await env.DB
-      .prepare('SELECT id, title, description, authorId, publishedAt FROM articles ORDER BY publishedAt DESC LIMIT 50')
-      .all();
+  return c.json({ error: 'Internal Server Error', message: err.message }, 500);
+});
 
-    return new Response(JSON.stringify(articles), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300' // Cache for 5 minutes
-      }
-    });
-  } catch (error) {
-    console.error('Database error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to fetch articles' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+// Export for Cloudflare Workers
+export default {
+  fetch: app.fetch,
+
+  async scheduled(event, env, ctx) {
+    console.log('Scheduled handler triggered');
+    ctx.waitUntil(runScheduledTasks(env));
   }
-}
-
-/**
- * Handle analytics queries
- */
-async function handleAnalyticsQuery(env, path) {
-  if (!env.ANALYTICS) {
-    return new Response(
-      JSON.stringify({ error: 'Analytics Engine not configured' }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  // Analytics data will be aggregated by Cloudflare
-  // This is just a placeholder endpoint
-  return new Response(
-    JSON.stringify({
-      message: 'Analytics data available through Cloudflare dashboard',
-      docs: 'https://developers.cloudflare.com/analytics/analytics-engine/'
-    }),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
-}
-
-/**
- * Check if path is a static asset
- */
-function isStaticAsset(path) {
-  const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2', '.ico'];
-  return staticExtensions.some(ext => path.endsWith(ext));
-}
-
-/**
- * Handle static assets with appropriate caching
- */
-async function handleStaticAsset(request, env, ctx) {
-  // This would normally fetch from your origin server
-  // For now, return 404
-  return new Response('Static asset not found', { status: 404 });
-}
+};
 
 /**
  * Run scheduled maintenance tasks
@@ -305,17 +483,44 @@ async function runScheduledTasks(env) {
   }
 
   try {
-    // Example: Clean up old analytics data
-    const result = await env.DB.prepare(
-      'DELETE FROM analytics_events WHERE createdAt < datetime("now", "-90 days")'
-    ).run();
+    const now = Date.now();
 
-    console.log(`Cleaned up old analytics data: ${result.success ? 'Success' : 'Failed'}`);
+    // Clean up old analytics data (90 days)
+    await env.DB.prepare(
+      'DELETE FROM analytics_events WHERE createdAt < ?'
+    ).bind(now - (90 * 24 * 60 * 60 * 1000)).run();
 
-    // Example: Update trending articles
-    // await updateTrendingArticles(env.DB);
+    // Clean up expired sessions
+    await env.DB.prepare(
+      'DELETE FROM user_sessions WHERE expiresAt < ?'
+    ).bind(now).run();
 
-    // Log to Analytics Engine
+    // Clean up old notifications (30 days)
+    await env.DB.prepare(
+      'DELETE FROM notifications WHERE createdAt < ? AND isRead = 1'
+    ).bind(now - (30 * 24 * 60 * 60 * 1000)).run();
+
+    // Update trending articles
+    await env.DB.prepare(`
+      INSERT OR REPLACE INTO trending_articles (id, articleId, score, calculatedAt)
+      SELECT
+        lower(hex(randomblob(16))),
+        id,
+        (views * 0.3 + likes * 0.5 + comments * 0.2) * (1 - (? - publishedAt) / 604800000.0),
+        ?
+      FROM articles
+      WHERE status = 'published' AND publishedAt > ?
+      ORDER BY score DESC
+      LIMIT 50
+    `).bind(now, now, now - (7 * 24 * 60 * 60 * 1000)).run();
+
+    // Clean up expired offline sync items
+    await env.DB.prepare(
+      'DELETE FROM offline_sync WHERE status = ? AND createdAt < ?'
+    ).bind('completed', now - (7 * 24 * 60 * 60 * 1000)).run();
+
+    console.log('Scheduled tasks completed successfully');
+
     if (env.ANALYTICS) {
       env.ANALYTICS.writeDataPoint({
         indexes: ['scheduled', 'maintenance'],

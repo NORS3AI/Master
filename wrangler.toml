@@ -3,6 +3,12 @@ main = "src/workers/index.js"
 compatibility_date = "2024-01-01"
 account_id = "8c338f96fc4756f94cea4c367a604b34"
 
+# D1 Database binding (default environment)
+[[d1_databases]]
+binding = "DB"
+database_name = "rsnews-db1"
+database_id = "2e425404-3a10-482b-ae84-31271aa000ba"
+
 # Routes and deployment settings
 routes = [
   { pattern = "rsnewsroom.nors3ai.com", zone_name = "nors3ai.com" }
